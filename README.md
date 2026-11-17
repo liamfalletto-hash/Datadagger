@@ -1,60 +1,55 @@
-# Aether
+# Launch Your AI
 
 *The cloud is not in the sky.*
 
-An educational idle game about the real environmental cost of AI. You run **Aether**, an AI start-up that grows from one laptop in an empty room into a superintelligence. Every dollar you earn costs electricity, CO₂, water and e-waste, and the game shows you real numbers for all of them.
+An educational idle game about the real environmental cost of AI. You name your own AI start-up and grow it from a garage to a planet-sized superintelligence, climbing a (fictional) world ranking past ChatGPT, Gemini, Claude and the rest. Every dollar you earn costs electricity, CO₂, water and e-waste, and the world around you shows it.
 
 ## How to play
 
-**Open `index.html` in any web browser** by double-clicking it. There's nothing to install, no internet connection is needed, and progress saves automatically.
+**Open `index.html` in a web browser** by double-clicking it. Nothing to install; your progress saves automatically.
 
-1. **Answer prompts** (the big button) to earn your first dollars.
-2. **Buy hardware** so Aether earns money on its own (use ×1 / ×10 / Max to buy in bulk).
-3. **Fill the progress bar** to reach the next stage. There are 5 stages:
+1. **Name your AI start-up** on the black start screen and watch where it starts in the world ranking.
+2. **Tap the speech bubble** to answer prompts. **Buy hardware** in the shop: it appears in your room. Own 10, 25 and 50 of one item to double its income.
+3. **Fill the progress bar**, then press the move button. There are 5 places:
    1. The Garage
-   2. The Start-up
-   3. The Scale-up
-   4. The AI Giant
-   5. The Race to Superintelligence
-4. Early in stage 2 you get **fined**, and the **Sustainability score** appears. From then on:
-   - **Decisions** (energy source, cooling, hardware lifespan, model size, drought, the race) move the score.
-   - **A low score boosts income** (up to ×1.3), but it also brings fines and heatwaves. **A high score slows income** (down to ×0.7).
-   - **The score decides the ending:**
-     - 70+ → 🌱 *The Long Game* (good)
-     - 40–69 → 🌫️ *Business as Usual*
-     - below 40 → ⬛ *Hello?* (humanity is gone)
-5. Read the **News** tab, which reacts to your progress and your score, and collect the **Real facts** (20 sourced facts).
-6. The end screen shows your total footprint with everyday equivalents, your choices, and **5 real facts to remember**.
+   2. The Office
+   3. The Data Centre
+   4. The AI Campus
+   5. The Planet
+4. **In the office you get fined**, and your **Sustainability score** appears. From then on:
+   - Low sustainability = more income (up to ×1.3). High = less (down to ×0.7).
+   - **AI upgrades** boost income but often cost power and sustainability. **Green upgrades** raise sustainability and lower income. Each green upgrade is unlocked by reading its real fact.
+   - Decisions (energy, cooling, hardware, models, drought, the race) move the score.
+   - The world around you changes: the rainbow fades, the sky turns smoggy, trees die, the lake and ice caps shrink.
+5. **Press conferences** ask about the real facts you've unlocked. Right answers pay.
+6. **Goals** give rewards, and **badges** are kept between games.
+7. Your final score decides the ending: 70+ is good, below 40 is bad. The end screen shows your footprint and 5 real facts to remember.
 
-A full game takes about **8–12 minutes**. Polluting is the fastest route and the green route is the slowest, on purpose.
+A full game takes about **20 minutes**. For a quick class demo, add `#fast` to the address (`index.html#fast`) to play 5× faster.
 
-**Presenting to the class?** Add `?speed=5` to the address (e.g. `index.html?speed=5`) to run the game 5× faster. The **↺ New game** button at the bottom resets everything.
+## Facts and fiction
 
-## What's real and what's fiction
-
-The story is fiction. Every number presented as a **Real fact** comes from a published source (IEA, peer-reviewed papers, Google, the UN Global E-waste Monitor, Ireland's Central Statistics Office, the Uptime Institute, the IPCC…), and the source is shown on every fact card. Your in-game footprint is calculated from realistic ratios:
-
-- CO₂ per kWh depends on the energy source you choose: coal & gas ≈ 750 g, grid ≈ 450 g, renewables ≈ 30 g.
-- Cooling overhead (PUE) and water per kWh depend on your cooling choice.
-- E-waste depends on how long you keep your servers.
+The story and the ranking are fiction. Every **Real fact** is sourced (IEA, peer-reviewed papers, Google, the UN Global E-waste Monitor, Ireland's CSO, the Uptime Institute, the IPCC…). Your footprint uses realistic ratios: CO₂ per kWh depends on your energy source, cooling overhead and water use on your cooling choice, e-waste on how long you keep servers.
 
 ## Project structure
 
 ```
-index.html          the page
-css/style.css       all styling
-js/data.js          ALL game content: stages, hardware, upgrades, decisions, facts, news, endings
-js/engine.js        game rules and simulation (no display code)
-js/ui.js            draws the game and handles clicks
-tools/sim.js        a bot that plays the whole game headlessly to check balance
-tools/tune.js       finds stage goals that give the target stage durations
-docs/GAME_DESIGN.md the original design plan
+index.html             the page
+css/style.css          base sticker-style UI
+css/screens.css        start screen, ranking intro, pop-ups, ending
+js/data.js             stages, hardware, AI upgrades, green upgrades, decisions
+js/content.js          real facts, press questions, news, goals, badges, ranking, endings
+js/engine.js           game rules (no display code)
+js/art.js              drawing helpers, icons, badges, landscape, people
+js/scenes/*.js         the five places
+js/ui.js               game screen and loop
+js/screens.js          start screen, intro animation, pop-ups, ending
+tools/sim.js           bot that plays the whole game to check balance
+tools/tune.js          finds stage goals for a target play time
 ```
 
-**To change text, facts, prices or decisions, edit `js/data.js` only.** To check that the game is still balanced after a change, run this (needs Node.js):
+**To change text, facts, prices or decisions, edit `js/data.js` or `js/content.js`.** To check balance after a change (needs Node.js):
 
 ```bash
 node tools/sim.js
 ```
-
-It prints how long a polluting, a middle and a green player take to finish, and which ending each one gets.
