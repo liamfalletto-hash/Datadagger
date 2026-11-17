@@ -42,11 +42,15 @@
     list.innerHTML = rows;
     const win = box.querySelector(".intro-window");
     requestAnimationFrame(() => requestAnimationFrame(() => { list.style.transform = `translateY(${-(list.scrollHeight - win.clientHeight)}px)`; }));
-    const cap = $("introCaption");
-    setTimeout(() => { cap.textContent = "These are the world's AIs."; }, 400);
-    setTimeout(() => { $("introYou").classList.add("show"); cap.textContent = `${st.name} starts at the very bottom.`; }, 5000);
-    setTimeout(() => { cap.textContent = "Time to climb."; }, 6800);
-    setTimeout(() => {
+    const cap = $("introCaption"), timers = [], later = (fn, ms) => timers.push(setTimeout(fn, ms));
+    later(() => { cap.textContent = "These are the world's AIs."; }, 400);
+    later(() => { $("introYou").classList.add("show"); cap.textContent = `${st.name} starts at the very bottom.`; }, 5000);
+    later(() => { cap.textContent = "Time to climb."; }, 6800);
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      timers.forEach(clearTimeout);
       $("introFrame").classList.add("shrink");
       box.classList.add("fade");
       App.start(st);
@@ -58,7 +62,9 @@
       stage.style.transform = "scale(1)";
       App.modalOpen = true;
       setTimeout(() => { box.remove(); stage.classList.remove("stage-zoom"); stage.style.transform = ""; App.modalOpen = false; welcome(); }, 1700);
-    }, 8200);
+    };
+    later(finish, 8200);
+    box.addEventListener("click", finish);
   }
   function welcome() {
     App.modalOpen = true;

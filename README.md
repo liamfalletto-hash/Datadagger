@@ -25,6 +25,16 @@ An educational idle game about the real environmental cost of AI. You name your 
 6. **Goals** give rewards, and **badges** are kept between games.
 7. Your final score decides the ending: 70+ is good, below 40 is bad. The end screen shows your footprint and 5 real facts to remember.
 
+**Dashboard:** the button at the top right opens your stats: press-conference questions answered right and wrong, real facts read, sustainability and CO₂ over time, footprint, time in each place, decisions, upgrades and badges.
+
+**Developer mode (for presentations):** open `dev.html` instead of `index.html`. You get unlimited money and every fact unlocked. A DEV bar under the progress bar lets you:
+- jump between places (◀ ▶) and fill the progress bar
+- change the speed (×1, ×5, ×20)
+- set the sustainability score (90, 55, 30, 8)
+- trigger a press question or a fine
+
+The dashboard shows sample end-of-game data, with a switch to live data. Nothing is saved in developer mode.
+
 A full game takes about **20 minutes**. For a quick class demo, add `#fast` to the address (`index.html#fast`) to play 5× faster.
 
 ## Facts and fiction
@@ -45,6 +55,9 @@ js/art.js              drawing helpers, icons, badges, landscape, people
 js/scenes/*.js         the five places
 js/ui.js               game screen and loop
 js/screens.js          start screen, intro animation, pop-ups, ending
+js/dashboard.js        stats dashboard (quiz, facts, charts)
+js/dev.js              developer mode (only active in dev.html)
+dev.html               the game in developer mode
 tools/sim.js           bot that plays the whole game to check balance
 tools/tune.js          finds stage goals for a target play time
 ```

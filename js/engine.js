@@ -23,7 +23,7 @@
       factors: { ci: 0.45, pue: 1.5, wue: 0.5, lifespan: 1095, powerMult: 1, biome: "grass" },
       footprint: { kwh: 0, co2: 0, water: 0, ewaste: 0 }, footprintAtReveal: null,
       facts: [], read: [], asked: [], pressRight: 0, pressWrong: 0,
-      goalsDone: [], badges: [], rank: 1200, passed: [], finesPaid: 0, finesCount: 0,
+      goalsDone: [], badges: [], rank: 1200, passed: [], finesPaid: 0, finesCount: 0, pressLog: [], history: [], stageDays: [0], lastSample: -99,
       news: [], recentNews: [], queue: [], toasts: [], triggered: {},
       timers: { news: 6, fine: 90, heat: 70, good: 80, press: 70 },
       heatUntil: 0, ended: false, ending: null,
@@ -301,6 +301,7 @@
     if (!q || st.asked.includes(fid)) return null;
     st.asked.push(fid);
     const ok = idx === q.answer;
+    st.pressLog.push({ fact: fid, picked: idx, answer: q.answer, ok, day: Math.floor(st.day) });
     let reward = 0;
     if (ok) {
       reward = Math.round(Math.max(100, incomePerSec(st) * 40));
@@ -316,6 +317,7 @@
     if (!info.ready || st.ended) return false;
     if (st.stage < G.stages.length) {
       st.stage++;
+      st.stageDays[st.stage - 1] = Math.floor(st.day);
       st.queue.push({ type: "stage", stage: st.stage });
       addNews(st, `MILESTONE: {name} moves on: ${G.stages[st.stage - 1].name}.`, "milestone");
       if (st.stage === 3) unlockFact(st, "digital");
@@ -351,6 +353,11 @@
     const e = eff(st), itKw = itPowerKW(st), itKwh = itKw * 24 * days;
     addFootprint(st, itKwh * e.pue, itKwh);
     st.footprint.ewaste += (itKw * G.REF.hardwareKgPerKw * days) / e.lifespan;
+    if (st.day - st.lastSample >= 4) {
+      st.lastSample = st.day;
+      st.history.push({ d: Math.floor(st.day), s: st.revealed ? sustainability(st) : null, co2: Math.round(st.footprint.co2), rank: st.rank, stage: st.stage });
+      if (st.history.length > 600) st.history = st.history.filter((_, i) => i % 2 === 0);
+    }
     checkProgress(st);
     checkRank(st);
     checkBadges(st);

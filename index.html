@@ -59,7 +59,7 @@
         <div class="bar"><span id="stageBar"></span><em id="stageLabel"></em></div>
         <button class="buy gold move-btn" id="moveBtn">Move on →</button>
       </div>
-      <div class="hud-spacer"></div>
+      <button class="chip dash-btn" id="dashBtn"><span class="ico" style="background:var(--blue-soft)" data-icon="chart"></span><span><b>Dashboard</b><small>your stats</small></span></button>
     </header>
 
     <aside class="left" aria-label="Ranking, goal and sustainability">
@@ -80,6 +80,7 @@
   </div>
 
   <div class="modal hidden" id="modal" role="dialog" aria-modal="true"><div class="modal-card card" id="modalCard"></div></div>
+  <div class="dash hidden" id="dash" role="dialog" aria-modal="true" aria-label="Dashboard"></div>
   <div class="ending hidden" id="ending"></div>
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
@@ -92,6 +93,8 @@
   <script src="js/scenes/datacenter.js"></script>
   <script src="js/scenes/world.js"></script>
   <script src="js/ui.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/dev.js"></script>
   <script src="js/screens.js"></script>
 </body>
 </html>

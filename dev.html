@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Launch Your AI Dev Mode</title>
+  <meta name="description" content="An idle game about the real environmental cost of AI." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/screens.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+</head>
+<body>
+  <div class="start" id="start">
+    <div class="start-inner">
+      <p class="start-kicker">Year 1 · Day 1</p>
+      <h1 class="start-title">Launch your own<br />AI start-up</h1>
+      <p class="start-sub">You have a laptop, a garage and an idea. Every big AI started somewhere.</p>
+      <form id="startForm" autocomplete="off">
+        <label for="nameInput">Name your AI</label>
+        <div class="start-row">
+          <input id="nameInput" maxlength="16" placeholder="e.g. Nimbus" />
+          <button class="buy" type="submit">Launch ▶</button>
+        </div>
+        <div class="suggest" id="suggest"></div>
+      </form>
+      <button class="continue" id="continueBtn" hidden></button>
+      <p class="start-foot">A game about the real environmental cost of AI. The story is fiction. The facts are real and sourced.</p>
+    </div>
+  </div>
+
+  <div class="intro hidden" id="intro">
+    <div class="intro-frame" id="introFrame">
+      <div class="intro-head"><span>World AI ranking</span><span>Users</span></div>
+      <div class="intro-window"><div class="intro-list" id="introList"></div></div>
+    </div>
+    <p class="intro-caption" id="introCaption"></p>
+  </div>
+
+  <div class="world" id="world" hidden>
+    <svg class="scene" id="scene" viewBox="-180 -110 1440 900" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Your company and the world around it"></svg>
+    <button class="bubble" id="bubble">
+      <span class="bubble-label">Incoming prompt</span>
+      <span class="bubble-text" id="promptText"></span>
+      <span class="bubble-cta">Tap to answer <b id="clickVal">+$1</b></span>
+    </button>
+  </div>
+
+  <div class="app" id="app" hidden>
+    <header class="hud">
+      <div class="chips">
+        <div class="chip big" id="cashChip"><span class="ico" style="background:var(--mint-soft)" data-icon="cash"></span><span><b id="cash">$0</b><small id="rate">+$0/s</small></span></div>
+        <div class="chip"><span class="ico" style="background:var(--gold-soft)" data-icon="bolt"></span><span><b id="power">0 W</b><small>power draw</small></span></div>
+      </div>
+      <div class="stagecard">
+        <div class="row"><h1 id="stageName">The Garage</h1><span class="step" id="stageStep">Stage 1 of 5</span></div>
+        <div class="bar"><span id="stageBar"></span><em id="stageLabel"></em></div>
+        <button class="buy gold move-btn" id="moveBtn">Move on →</button>
+      </div>
+      <button class="chip dash-btn" id="dashBtn"><span class="ico" style="background:var(--blue-soft)" data-icon="chart"></span><span><b>Dashboard</b><small>your stats</small></span></button>
+    </header>
+
+    <aside class="left" aria-label="Ranking, goal and sustainability">
+      <article class="card rank-card" id="rankCard"></article>
+      <article class="card goal" id="goal"></article>
+      <article class="card sus" id="sus"></article>
+    </aside>
+
+    <aside class="shop" aria-label="Shop">
+      <nav class="tabs" id="tabs" role="tablist"></nav>
+      <div class="panel" id="panel"></div>
+    </aside>
+  </div>
+
+  <div class="newsbar" id="newsbar" hidden aria-label="News">
+    <span class="ticker-tag">NEWS</span>
+    <div class="ticker-track"><p id="tickerText"></p></div>
+  </div>
+
+  <div class="modal hidden" id="modal" role="dialog" aria-modal="true"><div class="modal-card card" id="modalCard"></div></div>
+  <div class="dash hidden" id="dash" role="dialog" aria-modal="true" aria-label="Dashboard"></div>
+  <div class="ending hidden" id="ending"></div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script>window.DEV_MODE = true;</script>
+  <script src="js/data.js"></script>
+  <script src="js/content.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/scenes/garage.js"></script>
+  <script src="js/scenes/office.js"></script>
+  <script src="js/scenes/datacenter.js"></script>
+  <script src="js/scenes/world.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/dev.js"></script>
+  <script src="js/screens.js"></script>
+</body>
+</html>

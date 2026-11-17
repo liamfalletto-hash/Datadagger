@@ -6,7 +6,7 @@
   const SAVE = "aether-save-v2", BADGES = "aether-badges-v1", R = G.REF;
   const params = new URLSearchParams(location.search);
   const SPEED = location.hash === "#fast" ? 5 : Math.max(0.1, Math.min(50, Number(params.get("speed")) || 1));
-  const App = (window.App = { st: null, running: false, modalOpen: false, tab: "hardware", amount: "1", money, fmt, $ });
+  const App = (window.App = { st: null, running: false, modalOpen: false, tab: "hardware", amount: "1", speed: SPEED, money, fmt, $ });
 
   /* ---------- storage (always optional) ---------- */
   const load = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
@@ -82,7 +82,7 @@
   /* ---------- HUD ---------- */
   function renderHud() {
     const st = App.st, info = E.stageInfo(st);
-    $("cash").textContent = money(st.cash);
+    $("cash").textContent = window.DEV_MODE ? "$∞" : money(st.cash);
     $("rate").textContent = `+${money(E.incomePerSec(st))}/s`;
     $("power").textContent = E.fmtPower(E.facilityPowerKW(st));
     $("stageName").textContent = info.stage.name;
@@ -348,7 +348,7 @@
   };
   let last = performance.now(), lastRender = 0, lastSave = 0;
   function frame(now) {
-    const dt = Math.min((now - last) / 1000, 1) * SPEED;
+    const dt = Math.min((now - last) / 1000, 1) * App.speed;
     last = now;
     const st = App.st;
     if (st && App.running && !App.modalOpen && !st.ended) {
