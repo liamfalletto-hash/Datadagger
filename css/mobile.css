@@ -1,0 +1,127 @@
+/* Phones and small tablets: slim top bar, scene pinned under it, panels scroll below. */
+@media (max-width: 900px) {
+  body { padding-top: var(--hudh, 64px); padding-bottom: 44px; }
+
+  /* Top bar: cash · progress · dashboard */
+  .hud { position: fixed; top: 0; left: 0; right: 0; z-index: 6; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px;
+    padding: max(6px, env(safe-area-inset-top, 0px)) max(10px, env(safe-area-inset-right, 0px)) 6px max(10px, env(safe-area-inset-left, 0px));
+    background: var(--paper); border-bottom: 3px solid var(--ink); pointer-events: auto; }
+  .hud .chips { flex-wrap: nowrap; }
+  .hud .chips .chip:not(.big) { display: none; }
+  .chip, .chip.big { padding: 3px 10px 3px 3px; box-shadow: none; }
+  .chip.big .ico, .ico { width: 30px; height: 30px; }
+  .chip.big b { font-size: 18px; }
+  .chip small { display: block; font-size: 10.5px; }
+  .stagecard { order: 0; max-width: none; padding: 4px 8px 6px; box-shadow: none; border-radius: 12px; min-width: 0; }
+  .stagecard h1 { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stagecard .step { display: none; }
+  .stagecard .bar { height: 18px; margin-top: 3px; }
+  .stagecard .bar em { font-size: 11px; }
+  .move-btn.show { margin-top: 6px; font-size: 14px; padding: 6px 8px 9px; }
+  .dash-btn { padding: 3px; }
+  .dash-btn > span:last-child { display: none; }
+
+  /* The scene stays visible while the panels scroll under it */
+  .world { position: sticky; top: var(--hudh, 64px); height: 42vh; min-height: 270px; z-index: 2; border-bottom: 3px solid var(--ink); }
+  .bubble { max-width: 62%; padding: 5px 9px 7px; border-width: 2.5px; border-radius: 13px; }
+  .bubble-label { display: none; }
+  .bubble-text { font-size: 13px; }
+  .bubble-cta { font-size: 11px; }
+  .floater { font-size: 17px; }
+
+  /* Panels: goal + rank side by side, then sustainability, then the shop */
+  .app { min-height: 0; padding: 12px max(12px, env(safe-area-inset-right, 0px)) 16px max(12px, env(safe-area-inset-left, 0px));
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "goal rank" "sus sus" "shop shop"; gap: 10px; pointer-events: auto; }
+  .left { display: contents; }
+  #goal { grid-area: goal; }
+  #rankCard { grid-area: rank; }
+  #sus { grid-area: sus; }
+  .shop { grid-area: shop; }
+  .card { box-shadow: 0 3px 0 var(--ink); }
+  .goal { padding: 8px 10px 10px; }
+  .goal h3 { font-size: 14px; margin: 6px 0; }
+  .goal-reward { font-size: 11px; }
+  .tag { font-size: 10.5px; padding: 4px 6px; }
+  .rank-card { padding: 8px 10px; }
+  .rank-top .fict { display: none; }
+  .rank-big b { font-size: 30px; }
+  .rank-list li:not(.you) { display: none; }
+  .rank-list li.you { grid-template-columns: 1fr; font-size: 12.5px; }
+  .rank-list li.you span:first-child { display: none; }
+  .impact { padding: 8px 10px; }
+  .sus { padding: 8px 12px 10px; }
+  .sus-score svg { width: 74px; }
+  .sus-score b { font-size: 34px; }
+  .sus-score { margin: 0 0 4px; }
+  .sus .fp-list, .sus-size { display: none; }
+  .sus-fines { margin: 4px 0 0; font-size: 12.5px; }
+  .sus .buy { margin-top: 8px; }
+
+  /* Shop */
+  .shop { grid-template-columns: minmax(0, 1fr); }
+  .tabs { flex-direction: row; padding-top: 0; gap: 6px; }
+  .tab { width: auto; flex: 1; height: 46px; border-radius: 12px; }
+  .tab svg { width: 26px; height: 26px; }
+  .tab[aria-selected="true"] { transform: translateY(4px); }
+  .panel-head { padding: 8px 12px; }
+  .panel-head h2 { font-size: 18px; }
+  .panel-body { max-height: none; padding: 10px; }
+  .item { grid-template-columns: 52px minmax(0, 1fr) auto; gap: 8px; padding: 7px; }
+  .thumb { width: 52px; height: 52px; }
+  .thumb > svg { width: 50px; height: 40px; }
+  .item h3 { font-size: 15px; }
+  .earn-line { font-size: 12.5px; }
+  .buy { min-width: 70px; font-size: 15px; padding: 7px 8px 10px; }
+
+  /* News bar and notices */
+  .newsbar { height: 40px; }
+  .newsbar .ticker-tag { font-size: 13px; padding: 0 10px; }
+  .newsbar .ticker-track p { font-size: 14px; }
+  .toasts { bottom: 50px; width: calc(100% - 24px); }
+  .toast { font-size: 12.5px; padding: 6px 10px 6px 6px; }
+  .toast b { font-size: 14px; }
+  .toast > svg { width: 32px; height: 38px; }
+  .toast .t-ico { width: 32px; height: 32px; }
+  .toasts .toast:nth-child(n+2) { display: none; }
+
+  /* Developer bar scrolls sideways instead of wrapping */
+  .devbar { flex-wrap: nowrap; overflow-x: auto; margin-top: 5px; padding-top: 5px; }
+  .devbar button { flex: none; }
+
+  /* Pop-ups */
+  .modal { padding: 10px; align-items: end; }
+  .modal-card { padding: 14px 14px 16px; max-height: calc(100vh - 20px); }
+  .m-ico { width: 44px; height: 44px; }
+  .m-ico svg { width: 26px; height: 26px; }
+  .m-head h2 { font-size: 20px; }
+  .modal-card p, .howto { font-size: 14px; }
+  .opt b { font-size: 15px; }
+  .big-fine { font-size: 32px; }
+}
+
+/* Dashboard on phones */
+.dash { z-index: 260; }
+@media (max-width: 640px) {
+  .dash { padding: 10px 10px 60px; background: #e9e1d2; }
+  .dash-head h2 { font-size: 22px; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .kpi { padding: 10px; }
+  .kpi b { font-size: 24px; }
+  .qtable thead { display: none; }
+  .qtable tr { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px; padding: 10px 0; border-bottom: 1px solid #e6dfd2; }
+  .qtable td { display: block; padding: 0; border: 0; }
+  .qtable td:nth-child(2) { font-weight: 800; }
+  .qtable td:nth-child(3)::before { content: "Answered: "; color: var(--muted); font-weight: 700; }
+  .qtable td:nth-child(4)::before { content: "Correct answer: "; color: var(--muted); font-weight: 700; }
+  .factlist li { grid-template-columns: 76px minmax(0, 1fr); }
+  .split .seg { min-width: 56px; font-size: 13px; }
+}
+
+/* Start screen: keep everything inside narrow screens */
+.start { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+.start-inner { width: 100%; max-width: 560px; min-width: 0; }
+@media (max-width: 480px) {
+  .start input { font-size: 18px; padding: 10px 12px; }
+  .start .buy { font-size: 16px; padding: 8px 12px 12px; }
+  .start-sub { font-size: 15px; }
+}

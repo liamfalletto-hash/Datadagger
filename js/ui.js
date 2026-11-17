@@ -60,6 +60,10 @@
     b.style.top = y + "px";
   }
   window.addEventListener("resize", applyFrame);
+  // Phones: the top bar is fixed, so the page and the pinned scene start below it.
+  const hudEl = document.querySelector(".hud");
+  const syncHud = () => { document.documentElement.style.setProperty("--hudh", hudEl.offsetHeight + "px"); placeBubble(); };
+  if (window.ResizeObserver) { new ResizeObserver(syncHud).observe(hudEl); new ResizeObserver(placeBubble).observe($("world")); }
 
   let sceneKey = "";
   App.view = () => {

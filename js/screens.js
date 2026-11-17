@@ -86,7 +86,7 @@
     } else if (item.type === "fine") {
       card.classList.add("alert");
       const fp = st.footprint;
-      h = head("note", "Breaking news", `${A.esc(st.name)} has been fined`, "#fde3dc") + `<div class="big-fine">−${money(item.amount)}</div>` +
+      h = head("note", "Breaking news", `${A.esc(st.name)} has been fined`, "#fde3dc") + `<div class="big-fine">−${money(item.amount > 1e15 ? Math.max(1000, E.incomePerSec(st) * 60) : item.amount)}</div>` +
         `<p>You didn't report your energy use. From now on, AI companies must <b>measure their impact</b>.</p>` +
         `<h3 style="margin:12px 0 4px;font-family:var(--display)">New: your Sustainability score (${E.sustainability(st)})</h3><ul class="howto"><li>Growing and dirty choices <b>lower it</b>. Green upgrades <b>raise it</b>.</li><li>Below 65 you get <b>fined</b>, more often the lower it goes.</li><li>It decides the <b>ending</b>: 70+ good, below 40 bad.</li></ul>` +
         `<div class="mini-grid"><div>CO₂ so far<b>${E.fmtMass(fp.co2)}</b>${App.eq.co2(fp.co2)}</div><div>Electricity so far<b>${E.fmtEnergy(fp.kwh)}</b>${App.eq.energy(fp.kwh)}</div></div><button class="buy" data-close>Got it</button>`;

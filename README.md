@@ -48,6 +48,7 @@ index.html             the page
 css/style.css          base sticker-style UI
 css/screens.css        start screen, ranking intro, pop-ups, ending
 css/layout.css         full-screen world, floating panels, news bar
+css/mobile.css         phone layout (slim top bar, pinned scene, stacked panels)
 js/data.js             stages, hardware, AI upgrades, green upgrades, decisions
 js/content.js          real facts, press questions, news, goals, badges, ranking, endings
 js/engine.js           game rules (no display code)
