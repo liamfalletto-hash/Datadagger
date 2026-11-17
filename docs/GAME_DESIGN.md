@@ -2,7 +2,12 @@
 
 > *"The cloud is not in the sky."*
 
-**Status:** v0.1 draft for team discussion. Everything here is a proposal; section 12 lists the decisions still open.
+**Status:** this is the original v0.1 design plan. The game we actually built (v1) is described in the [README](../README.md). It keeps the core ideas from this plan (reverse idle, real sourced facts, news ticker, the "Hello?" ending) and adds:
+
+- a **Sustainability score** that appears after a fine in stage 2
+- a score-based **income multiplier** (low score = more money)
+- **three endings** that depend on the score
+- **5 stages** with a progress bar
 
 ---
 

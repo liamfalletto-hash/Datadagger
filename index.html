@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aether</title>
+  <meta name="description" content="An idle game about the real environmental cost of AI." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☁️</text></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">AETHER</span>
+      <span class="tagline">The cloud is not in the sky.</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="label">Cash</span><span class="value" id="cash">$0</span><span class="sub" id="income">+$0/s</span></div>
+      <div class="stat"><span class="label">Users</span><span class="value" id="users">0</span></div>
+      <div class="stat"><span class="label">Power draw</span><span class="value" id="power">0 W</span></div>
+      <div class="stat"><span class="label">Day</span><span class="value" id="day">1</span></div>
+    </div>
+  </header>
+
+  <section class="progress" aria-label="Progress to next stage">
+    <div class="progress-head">
+      <span id="stageName">Stage 1 of 5 · The Garage</span>
+      <span id="stageNext">Next: The Start-up</span>
+    </div>
+    <div class="bar"><div class="fill" id="stageBar"></div><span class="pct" id="stagePct">0%</span></div>
+  </section>
+
+  <main class="grid">
+    <section class="col company" aria-label="Company">
+      <button class="click-btn" id="clickBtn">
+        <span class="prompt-label">Incoming prompt</span>
+        <span class="prompt" id="promptText">“Explain photosynthesis”</span>
+        <span class="click-label">Answer <b id="clickVal">+$1</b></span>
+      </button>
+      <div class="section-row">
+        <h2 class="section-title">Hardware</h2>
+        <div class="buy-amount" role="group" aria-label="Buy amount">
+          <button data-amt="1" class="active">×1</button><button data-amt="10">×10</button><button data-amt="max">Max</button>
+        </div>
+      </div>
+      <div id="gens" class="list"></div>
+      <h2 class="section-title">Upgrades</h2>
+      <div id="ups" class="list"></div>
+    </section>
+
+    <section class="col middle" aria-label="World">
+      <div class="scene" id="scene">
+        <div class="sky" id="sky"></div>
+        <div class="sun" id="sun">☀️</div>
+        <div class="smog" id="smog"></div>
+        <div class="smoke-layer" id="smoke"></div>
+        <div class="ground" id="ground">
+          <div class="trees" id="trees"></div>
+          <div class="buildings" id="buildings"></div>
+        </div>
+        <div class="scene-caption" id="sceneCaption">The view from Aether HQ</div>
+      </div>
+
+      <div class="card impact-locked" id="impactLocked">
+        <div class="locked-title">🌍 Environmental impact</div>
+        <div class="locked-text">Not measured. Nobody is asking… yet.</div>
+      </div>
+
+      <div class="card sustain hidden" id="sustainCard">
+        <div class="sustain-head">
+          <div>
+            <div class="card-label">Sustainability</div>
+            <div class="score"><span id="sScore">50</span><span class="out-of">/100</span> <span class="s-rating" id="sRating">Medium</span></div>
+          </div>
+          <div class="ending-forecast" id="endingForecast"></div>
+        </div>
+        <div class="gauge"><div class="gauge-fill" id="sGauge"></div><div class="gauge-mark" style="left:40%"></div><div class="gauge-mark" style="left:70%"></div></div>
+        <div class="mult-line" id="sMultLine"></div>
+
+        <div class="card-label spaced">Your footprint since day 1</div>
+        <div class="footprint" id="footprint"></div>
+
+        <div class="offsets">
+          <button id="offsetBtn" class="small-btn">🏷️ Buy carbon offsets</button>
+          <span class="offset-note" id="offsetNote"></span>
+        </div>
+
+        <div class="card-label spaced">Your choices</div>
+        <ul class="choices" id="choices"><li class="muted">None yet.</li></ul>
+      </div>
+    </section>
+
+    <section class="col side" aria-label="News and facts">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="news" role="tab">📰 News <span class="badge hidden" id="newsBadge"></span></button>
+        <button class="tab" data-tab="facts" role="tab">📊 Real facts <span class="count" id="factCount">0/0</span> <span class="badge hidden" id="factBadge"></span></button>
+      </div>
+      <div class="feed" id="newsList" aria-live="polite"></div>
+      <div class="feed hidden" id="factList"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Aether: a game about digital sustainability. Story is fiction; facts are real and sourced.</span>
+    <button class="link-btn" id="restartBtn">↺ New game</button>
+  </footer>
+
+  <div class="modal hidden" id="modal" role="dialog" aria-modal="true"><div class="modal-card" id="modalCard"></div></div>
+  <div class="ending hidden" id="ending"></div>
+  <div class="toasts" id="toasts"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
