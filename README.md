@@ -1,3 +1,31 @@
+# iPhone idle games
+
+This repo has two SwiftUI apps. Open either `.swiftpm` folder in Xcode and press ⌘R.
+
+- **`Overclock.swiftpm`**: the AI data center idle game from the design doc (first playable).
+- **`SporeGarden.swiftpm`**: the simple idle game template it grew from.
+
+## Overclock
+
+Grow an AI company from one server rack to a planet-wide compute empire while the Earth goes from green to smog to ash.
+
+What's in this first version (weeks 1–4 of the doc's roadmap, plus a few later pieces):
+
+- The 8 building tiers, costs, outputs and pollution from the doc. A tier unlocks at 10 of the one before; tiers 5–6 arrive in Smog, 7–8 in Ash.
+- Earth Health = 100 · e^(−pollution / K), with K growing each phase. Smog at 66% (income ×3), Ash at 33% (income ×5, heatwaves), and "The last river runs dry" at 0%.
+- A living planet drawn with SwiftUI Canvas: sky, oceans, land, clouds, rain and smoke all blend with Health. Oceans recede, rain turns to acid rain and then falling ash, and server lights get brighter with income.
+- Tap the planet for Tokens. Overclock button: ×2 income and ×3 pollution for 10 s, 60 s cooldown.
+- Power choice per building (Coal / Gas / Solar-Nuclear) from Smog phase on.
+- Milestones (×2 output at 25, 50, 100…), bulk buy ×1/×10/×100/Max.
+- Train a New Model prestige with Parameters (+2% income each) and a 5-node Model Tree, including an auto-scaler.
+- 14 sourced fact cards from the doc, unlocked by play and collected in the Stats Lab.
+- Offline earnings at 50%, capped at 4 h (up to 12 h); pollution keeps accruing while you're away.
+- Dev tab: skip time, add Tokens, damage the Earth, 10×/100× speed, grant Parameters, test offline.
+
+Not built yet: Metal fluid simulation (the Canvas planet stands in for it), tilt with CoreMotion, coolant routing, phase cinematics, audio, Restoration, widgets, ads/IAP and iCloud.
+
+All the numbers are in `Overclock.swiftpm/Config.swift`. The K values were tuned with a simulated player: Smog at about 24 minutes and Ash after about 13 hours of play in the first run. Playtest and adjust.
+
 # Spore Garden: idle game template for iPhone
 
 A small, complete idle/clicker game in SwiftUI, set up so you can change it and play right away.
