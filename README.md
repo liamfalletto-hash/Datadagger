@@ -13,6 +13,8 @@ What's in this first version (weeks 1–4 of the doc's roadmap, plus a few later
 
 - The 8 building tiers, costs, outputs and pollution from the doc. A tier unlocks at 10 of the one before; tiers 5–6 arrive in Smog, 7–8 in Ash.
 - Earth Health = 100 · e^(−pollution / K), with K growing each phase. Smog at 66% (income ×3), Ash at 33% (income ×5, heatwaves), and "The last river runs dry" at 0%.
+- **Your base grows with you**, drawn in isometric 2.5D: you start as one guy with a server in his bedroom. At 5 servers you move to a Warehouse, then a Server Hall (first Office Data Center), a riverside Campus (first Hyperscale Campus), and finally a Horizon Megacenter rising over the planet's curve (first Coal-Powered Megafarm). The Planetary Compute Core turns the whole globe into the data center. Every move gets a "Moving day" banner, and the sky outside your windows follows Earth Health.
+- The 🌍 button switches between your base and the planet.
 - A living planet drawn with SwiftUI Canvas: sky, oceans, land, clouds, rain and smoke all blend with Health. Oceans recede, rain turns to acid rain and then falling ash, and server lights get brighter with income.
 - Tap the planet for Tokens. Overclock button: ×2 income and ×3 pollution for 10 s, 60 s cooldown.
 - Power choice per building (Coal / Gas / Solar-Nuclear) from Smog phase on.

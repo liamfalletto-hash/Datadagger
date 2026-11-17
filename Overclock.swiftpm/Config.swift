@@ -27,6 +27,16 @@ enum Config {
     /// Every milestone doubles that building's output.
     static let milestones = [25, 50, 100, 200, 300, 400, 500, 750, 1000]
 
+    // MARK: Locations: where your company lives. You move automatically when you meet the requirement.
+    static let locations: [Location] = [
+        Location(name: "Bedroom",            tagline: "One guy, one server, one very loud fan.",           tier: 0, count: 0),
+        Location(name: "Warehouse",          tagline: "The bedroom got too hot. Time to rent a warehouse.", tier: 0, count: 5),
+        Location(name: "Server Hall",        tagline: "Raised floors, cold aisles, a real data center.",   tier: 2, count: 1),
+        Location(name: "Campus",             tagline: "Your own buildings by the river.",                  tier: 3, count: 1),
+        Location(name: "Horizon Megacenter", tagline: "Visible from orbit, rising over the horizon.",      tier: 4, count: 1),
+        Location(name: "Planetary Core",     tagline: "The planet is the data center now.",               tier: 7, count: 1),
+    ]
+
     // MARK: Earth Health = 100 · e^(−pollution / K)
     // K is per phase, so the decline slows down near the end.
     // Tuned with a simulated "always buy the best-value building" player: Smog at ~24 min,
@@ -121,6 +131,14 @@ enum Power: String, Codable, CaseIterable, Identifiable {
         case .clean: return 25
         }
     }
+}
+
+struct Location {
+    let name: String
+    let tagline: String
+    /// Move here once you own `count` of building tier `tier`.
+    let tier: Int
+    let count: Int
 }
 
 struct ModelNode: Identifiable {

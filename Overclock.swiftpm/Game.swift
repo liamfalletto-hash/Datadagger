@@ -53,6 +53,9 @@ final class Game: ObservableObject {
     @Published var offlineReport: OfflineReport?
     /// Set when a phase is entered: 1 = Smog, 2 = Ash, 3 = Health reached 0%.
     @Published var phaseBanner: Int?
+    /// Set when you move to a new location (index into Config.locations).
+    @Published var moveBanner: Int?
+    private var announcedStage = 0
 
     private var nextHeatwave = Date.distantFuture
     private var timer: Timer?
@@ -69,6 +72,7 @@ final class Game: ObservableObject {
         owned = Array(repeating: 0, count: Config.tiers.count)
         power = Array(repeating: .coal, count: Config.tiers.count)
         load()
+        announcedStage = locationStage
         if phase == 2 { nextHeatwave = Date().addingTimeInterval(60) }
         applyOffline()
         startTimer()
@@ -205,6 +209,27 @@ final class Game: ObservableObject {
 
     var offlineCapHours: Double { Config.offlineBaseHours + 2 * Double(level("memory")) }
 
+    // MARK: - Locations
+
+    var locationStage: Int {
+        var stage = 0
+        for (i, l) in Config.locations.enumerated() where owned[l.tier] >= l.count { stage = i }
+        return stage
+    }
+
+    var nextLocation: Location? {
+        let next = locationStage + 1
+        return next < Config.locations.count ? Config.locations[next] : nil
+    }
+
+    private func checkMove() {
+        let stage = locationStage
+        guard stage > announcedStage else { return }
+        announcedStage = stage
+        moveBanner = stage
+        notifyHaptic.notificationOccurred(.success)
+    }
+
     // MARK: - Buying
 
     func isUnlocked(_ i: Int) -> Bool {
@@ -250,6 +275,7 @@ final class Game: ObservableObject {
         owned[i] += n
         lightHaptic.impactOccurred()
         if first, let fact = Facts.firstBuy[i] { unlockFact(fact) }
+        checkMove()
     }
 
     private func autoBuy() {
@@ -257,6 +283,7 @@ final class Game: ObservableObject {
         guard let cheapest = options.min(by: { cost($0, quantity: 1) < cost($1, quantity: 1) }) else { return }
         tokens -= cost(cheapest, quantity: 1)
         owned[cheapest] += 1
+        checkMove()
     }
 
     // MARK: - Power choice
@@ -344,6 +371,8 @@ final class Game: ObservableObject {
         overclockReadyAt = .distantPast
         heatwaveUntil = .distantPast
         nextHeatwave = .distantFuture
+        announcedStage = locationStage
+        moveBanner = nil
     }
 
     func nodeCost(_ node: ModelNode) -> Double {

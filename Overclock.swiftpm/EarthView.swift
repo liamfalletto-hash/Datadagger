@@ -51,14 +51,6 @@ struct EarthState {
 
 struct EarthView: View {
     @EnvironmentObject var game: Game
-    @State private var sparks: [Spark] = []
-
-    struct Spark: Identifiable {
-        let id = UUID()
-        let text: String
-        let at: CGPoint
-        var rise = false
-    }
 
     var body: some View {
         let state = EarthState(
@@ -71,39 +63,8 @@ struct EarthView: View {
                 EarthRenderer.draw(&context, size: size, time: t, state: state)
             }
         }
-        .overlay {
-            ZStack {
-                ForEach(sparks) { s in
-                    Text(s.text)
-                        .font(.headline.weight(.heavy).monospacedDigit())
-                        .foregroundStyle(.yellow)
-                        .shadow(color: .black.opacity(0.6), radius: 2)
-                        .position(x: s.at.x, y: s.at.y - (s.rise ? 70 : 0))
-                        .opacity(s.rise ? 0 : 1)
-                }
-            }
-            .allowsHitTesting(false)
-        }
-        .contentShape(Rectangle())
-        .gesture(SpatialTapGesture().onEnded { value in tap(at: value.location) })
         .accessibilityElement()
-        .accessibilityLabel("Earth, \(Int(game.health))% health. Tap to answer queries.")
-        .accessibilityAddTraits(.isButton)
-    }
-
-    private func tap(at point: CGPoint) {
-        let gained = game.tapPlanet()
-        let spark = Spark(text: "+◈" + Fmt.num(gained), at: point)
-        sparks.append(spark)
-        let id = spark.id
-        DispatchQueue.main.async {
-            withAnimation(.easeOut(duration: 0.8)) {
-                if let i = sparks.firstIndex(where: { $0.id == id }) { sparks[i].rise = true }
-            }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
-            sparks.removeAll { $0.id == id }
-        }
+        .accessibilityLabel("Earth, \(Int(game.health))% health")
     }
 }
 

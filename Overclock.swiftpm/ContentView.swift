@@ -120,18 +120,38 @@ struct HealthBar: View {
 
 struct Stage: View {
     @EnvironmentObject var game: Game
+    @State private var showPlanet = false
+
+    private var onPlanet: Bool { showPlanet || game.locationStage >= 5 }
 
     var body: some View {
         ZStack {
-            EarthView()
+            Group {
+                if onPlanet { EarthView() } else { BaseView() }
+            }
+            .modifier(TapToEarn())
+            .transition(.opacity)
 
             VStack {
                 HStack(spacing: 6) {
-                    Chip(text: "Model v\(game.modelVersion)", symbol: "cpu", tint: Palette.accent)
+                    Chip(text: Config.locations[game.locationStage].name, symbol: "mappin.and.ellipse", tint: .white)
+                    Chip(text: "v\(game.modelVersion)", symbol: "cpu", tint: Palette.accent)
                     if game.isHeatwave {
                         Chip(text: "Heatwave", symbol: "thermometer.sun.fill", tint: .orange)
                     }
                     Spacer()
+                    if game.locationStage < 5 {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.4)) { showPlanet.toggle() }
+                        } label: {
+                            Image(systemName: showPlanet ? "house.fill" : "globe.europe.africa.fill")
+                                .font(.headline)
+                                .padding(8)
+                                .background(Color.black.opacity(0.45), in: Circle())
+                                .foregroundStyle(.white)
+                        }
+                        .accessibilityLabel(showPlanet ? "Show your base" : "Show the planet")
+                    }
                 }
                 Spacer()
                 HStack {
@@ -149,9 +169,20 @@ struct Stage: View {
             if let p = game.phaseBanner {
                 PhaseBanner(phase: p)
                     .transition(.opacity.combined(with: .scale(scale: 1.1)))
+            } else if let m = game.moveBanner {
+                MoveBanner(location: Config.locations[m])
+                    .transition(.opacity.combined(with: .scale(scale: 1.1)))
             }
         }
         .animation(.easeInOut(duration: 0.6), value: game.phaseBanner)
+        .animation(.easeInOut(duration: 0.6), value: game.moveBanner)
+        .onChange(of: game.moveBanner) { value in
+            guard value != nil else { return }
+            showPlanet = false // jump back to the base to see the new place
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                if game.moveBanner == value { game.moveBanner = nil }
+            }
+        }
         .onChange(of: game.phaseBanner) { value in
             guard value != nil else { return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
@@ -236,6 +267,30 @@ struct PhaseBanner: View {
     }
 }
 
+struct MoveBanner: View {
+    let location: Location
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Text("MOVING DAY")
+                .font(.caption.weight(.heavy))
+                .tracking(3)
+                .foregroundStyle(Palette.accent)
+            Text(location.name)
+                .font(.system(size: 30, weight: .black, design: .rounded))
+            Text(location.tagline)
+                .font(.footnote.weight(.semibold))
+                .opacity(0.85)
+        }
+        .multilineTextAlignment(.center)
+        .foregroundStyle(.white)
+        .padding(20)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black.opacity(0.5))
+        .allowsHitTesting(false)
+    }
+}
+
 struct FactCard: View {
     let fact: Fact
     let dismiss: () -> Void
@@ -275,6 +330,23 @@ struct BuildView: View {
             ForEach(BuyAmount.allCases) { Text($0.rawValue).tag($0) }
         }
         .pickerStyle(.segmented)
+
+        if let next = game.nextLocation {
+            let have = game.owned[next.tier]
+            HStack(spacing: 10) {
+                Image(systemName: "shippingbox.fill").foregroundStyle(.orange)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Next move: \(next.name)").font(.subheadline.weight(.bold))
+                    Text("Own \(next.count) \(Config.tiers[next.tier].name) (\(min(have, next.count))/\(next.count))")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                    ProgressView(value: Double(min(have, next.count)), total: Double(next.count))
+                        .tint(.orange)
+                }
+            }
+            .padding(12)
+            .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+        }
 
         ForEach(Config.tiers.filter { game.isUnlocked($0.id) }) { tier in
             TierRow(tier: tier)
