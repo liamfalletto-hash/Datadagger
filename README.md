@@ -11,7 +11,7 @@ Grow an AI company from one server rack to a planet-wide compute empire while th
 
 ![Overclock at 100%, 52% and 12% Earth Health](guide/overclock-arcade.jpg)
 
-**The look.** An arcade / simulator-game style: glossy buttons with thick black outlines, white text with a heavy stroke, striped SHOP panel, coin counter, big square menu buttons with red badges, and a round BOOST button. Fonts: Luckiest Guy and Fredoka (bundled in `Fonts/`, free licences included).
+**The look.** An arcade / simulator-game style: glossy buttons with thick black outlines, white text with a heavy stroke, clean SHOP panel with soft gradients, coin counter, big square menu buttons with red badges, and a hexagon BOOST chip with charge segments. Fonts: Luckiest Guy and Fredoka (bundled in `Fonts/`, free licences included).
 
 **Everything decays with the planet.**
 - The UI fades from bright blue to grey to rust red. Grime, cracks and hazard tape appear, the SHOP sign tilts, and in the last phase ash falls over the screen with a red alarm glow.

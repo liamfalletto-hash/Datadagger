@@ -286,37 +286,59 @@ struct BoostButton: View {
         let ready = game.overclockReady
         let activeLeft = max(0, game.overclockUntil.timeIntervalSince(now))
         let coolLeft = max(0, game.overclockReadyAt.timeIntervalSince(now))
-        let progress: Double = active ? activeLeft / Config.overclockSeconds : (ready ? 1 : 1 - coolLeft / Config.overclockCooldown)
-        let label = active ? "\(Int(activeLeft.rounded(.up)))s" : (ready ? "BOOST" : "\(Int(coolLeft.rounded(.up)))s")
-        let face = Arcade.colors(ready || active ? .orange : .slate, decay: 1 - health / 100)
-        let ring = ready || active ? Color(red: 1, green: 0.88, blue: 0.4) : Color(white: 0.75)
+        let charge: Double = active ? activeLeft / Config.overclockSeconds : (ready ? 1 : 1 - coolLeft / Config.overclockCooldown)
+        let lit = Int((min(1, max(0, charge)) * 6).rounded(.down))
+        let decay = 1 - health / 100
+        let rim: (RGB, RGB) = active ? (RGB(1, 0.69, 0.36), RGB(0.72, 0.25, 0.05)) : (RGB(0.56, 0.6, 0.68), RGB(0.17, 0.19, 0.24))
+        let core: [Color] = active
+            ? [Color(red: 1, green: 0.88, blue: 0.54), Color(red: 1, green: 0.48, blue: 0.1), Color(red: 0.35, green: 0.09, blue: 0.02)]
+            : (ready
+                ? [Color(red: 1, green: 0.6, blue: 0.24), Color(red: 0.66, green: 0.2, blue: 0.04), Color(red: 0.16, green: 0.05, blue: 0.02)]
+                : [Color(red: 0.23, green: 0.25, blue: 0.3), Color(red: 0.08, green: 0.09, blue: 0.11)])
+        let segmentOn = active ? Color(red: 1, green: 0.83, blue: 0.42) : Color(red: 1, green: 0.78, blue: 0.27)
+        let label = active ? "ACTIVE" : (ready ? "BOOST" : "CHARGING")
+        let labelColor = active ? Color(red: 1, green: 0.83, blue: 0.42) : (ready ? Color.white : Color(white: 0.7))
+        let pulse = active ? 0.5 + 0.5 * sin(now.timeIntervalSinceReferenceDate * 8) : 0
         Button {
             game.overclock()
         } label: {
-            ZStack {
-                Circle().stroke(Arcade.ink, lineWidth: 9)
-                    .frame(width: 84, height: 84)
-                Circle().trim(from: 0, to: min(1, max(0, progress)))
-                    .stroke(ring, style: StrokeStyle(lineWidth: 5, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .frame(width: 84, height: 84)
-                OutlinedSymbol("bolt.fill", size: 30)
-                    .frame(width: 70, height: 70)
-                    .background(ArcadeFace(top: face.0, bottom: face.1, radius: 35))
-                    .background(Circle().fill(Arcade.ink).offset(y: 4))
-                    .scaleEffect(active ? 1 + 0.05 * sin(now.timeIntervalSinceReferenceDate * 10) : 1)
+            VStack(spacing: 0) {
+                ZStack {
+                    ChargeSegments(lit: lit, on: segmentOn)
+                    Hexagon(corner: 7).fill(Arcade.ink)
+                        .frame(width: 70, height: 70)
+                        .offset(y: 4)
+                    Hexagon(corner: 7)
+                        .fill(LinearGradient(colors: [Arcade.weathered(rim.0, decay).color, Arcade.weathered(rim.1, decay).color], startPoint: .top, endPoint: .bottom))
+                        .frame(width: 70, height: 70)
+                    Hexagon(corner: 7).stroke(Arcade.ink, lineWidth: 3.5)
+                        .frame(width: 70, height: 70)
+                    Hexagon(corner: 5)
+                        .fill(RadialGradient(colors: core, center: UnitPoint(x: 0.5, y: 0.42), startRadius: 0, endRadius: 32))
+                        .frame(width: 52, height: 52)
+                    Hexagon(corner: 5)
+                        .fill(LinearGradient(colors: [Color.white.opacity(0.35), Color.white.opacity(0)], startPoint: .top, endPoint: .center))
+                        .frame(width: 52, height: 52)
+                    Hexagon(corner: 5).stroke(Arcade.ink.opacity(0.8), lineWidth: 2)
+                        .frame(width: 52, height: 52)
+                    if ready || active {
+                        OutlinedSymbol("bolt.fill", size: 22)
+                            .shadow(color: Color(red: 1, green: 0.7, blue: 0.28).opacity(0.55 + 0.45 * pulse), radius: 5 + 4 * pulse)
+                    } else {
+                        StrokeText("\(Int(coolLeft.rounded(.up)))s", size: 16)
+                    }
+                }
+                .frame(width: 90, height: 90)
+                StrokeText(label, size: 11, color: labelColor, stroke: 1.2)
+                    .padding(.horizontal, 6)
+                    .background(Capsule().fill(Color(red: 0.03, green: 0.05, blue: 0.11).opacity(0.85)))
+                    .overlay(Capsule().strokeBorder(Arcade.ink, lineWidth: 2.5))
+                    .offset(y: -6)
             }
-            .frame(width: 92, height: 92)
         }
         .buttonStyle(PressScale())
         .disabled(!ready)
-        .overlay(alignment: .bottom) {
-            StrokeText(label, size: 14)
-                .offset(y: 16)
-                .allowsHitTesting(false)
-        }
-        .padding(.bottom, 12)
-        .accessibilityLabel(ready ? "Boost: double income and triple pollution for 10 seconds" : "Boost recharging")
+        .accessibilityLabel(ready ? "Boost: double income and triple pollution for 10 seconds" : (active ? "Boost active" : "Boost charging"))
     }
 }
 
@@ -351,9 +373,14 @@ struct ShopSheet: View {
         }
         .background(
             ZStack {
-                shape.fill(LinearGradient(colors: [Palette.c(Arcade.bodyTop, health), Palette.c(Arcade.bodyBottom, health)], startPoint: .top, endPoint: .bottom))
-                Stripes(opacity: 0.07 - 0.04 * decay).clipShape(shape)
+                shape.fill(LinearGradient(colors: [Palette.c(Arcade.bodyTop, health), Palette.c(Arcade.bodyBottom, health)],
+                                          startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.7)))
+                shape.fill(RadialGradient(colors: [Color.white.opacity(0.10 - 0.04 * decay), Color.white.opacity(0)],
+                                          center: .top, startRadius: 0, endRadius: 240))
                 Wear(seed: 11).clipShape(shape)
+                TopRounded(radius: 23)
+                    .stroke(LinearGradient(colors: [Color.white.opacity(0.2), Color.white.opacity(0)], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.25)), lineWidth: 1.5)
+                    .padding(3)
                 shape.stroke(Arcade.ink, lineWidth: 3)
             }
             .ignoresSafeArea(edges: .bottom)
@@ -378,10 +405,8 @@ struct TitleBlock: View {
             .frame(height: 48)
             .background(
                 ZStack {
-                    shape.fill(LinearGradient(colors: [Palette.c(Arcade.headerTop, health), Palette.c(Arcade.headerBottom, health)], startPoint: .top, endPoint: .bottom))
-                    Stripes(opacity: 0.12).clipShape(shape)
+                    ArcadeFace(top: Palette.c(Arcade.headerTop, health), bottom: Palette.c(Arcade.headerBottom, health), radius: 14)
                     Wear(seed: 5).clipShape(shape)
-                    shape.strokeBorder(Arcade.ink, lineWidth: 3)
                 }
             )
             .background(shape.fill(Arcade.ink).offset(y: 5))

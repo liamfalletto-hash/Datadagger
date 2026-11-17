@@ -374,27 +374,6 @@ struct PressScale: ButtonStyle {
     }
 }
 
-/// Diagonal stripes, the classic arcade panel texture.
-struct Stripes: View {
-    var opacity: Double = 0.07
-    var spacing: CGFloat = 18
-
-    var body: some View {
-        Canvas { ctx, size in
-            var p = Path()
-            var x: CGFloat = -size.height
-            while x < size.width + size.height {
-                p.move(to: CGPoint(x: x, y: size.height))
-                p.addLine(to: CGPoint(x: x + size.height, y: 0))
-                x += spacing
-            }
-            ctx.stroke(p, with: .color(Color.white.opacity(opacity)), lineWidth: spacing / 2)
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-}
-
 /// Grime and cracks that appear as the planet dies.
 struct Wear: View {
     var seed: Int
@@ -493,8 +472,9 @@ struct ArcadePanel: ViewModifier {
                         shape.fill(Color.black.opacity(0.35))
                     } else {
                         shape.fill(LinearGradient(colors: [Palette.c(top, health), Palette.c(bottom, health)], startPoint: .top, endPoint: .bottom))
-                        Stripes(opacity: 0.07 - 0.04 * decay).clipShape(shape)
                         Wear(seed: seed).clipShape(shape)
+                        shape.inset(by: 4)
+                            .stroke(LinearGradient(colors: [Color.white.opacity(0.24 - 0.1 * decay), Color.white.opacity(0)], startPoint: .top, endPoint: .center), lineWidth: 1.5)
                     }
                     if dashed {
                         shape.strokeBorder(Color.white.opacity(0.35), style: StrokeStyle(lineWidth: 3, dash: [8, 6]))
@@ -510,6 +490,56 @@ struct ArcadePanel: ViewModifier {
 extension View {
     func arcadePanel(seed: Int = 0, top: Palette.Triple = Arcade.cardTop, bottom: Palette.Triple = Arcade.cardBottom, radius: CGFloat = 16, dashed: Bool = false) -> some View {
         modifier(ArcadePanel(seed: seed, top: top, bottom: bottom, radius: radius, dashed: dashed))
+    }
+}
+
+/// A pointy-top hexagon with softly rounded corners (the boost button).
+struct Hexagon: Shape {
+    var corner: CGFloat = 6
+
+    func path(in r: CGRect) -> Path {
+        let center = CGPoint(x: r.midX, y: r.midY)
+        let radius = min(r.width, r.height) / 2
+        let pts = (0..<6).map { i -> CGPoint in
+            let a = Double(i) * Double.pi / 3 - Double.pi / 2
+            return CGPoint(x: Double(center.x) + cos(a) * Double(radius), y: Double(center.y) + sin(a) * Double(radius))
+        }
+        var p = Path()
+        p.move(to: CGPoint(x: (pts[5].x + pts[0].x) / 2, y: (pts[5].y + pts[0].y) / 2))
+        for i in 0..<6 {
+            p.addArc(tangent1End: pts[i], tangent2End: pts[(i + 1) % 6], radius: corner)
+        }
+        p.closeSubpath()
+        return p
+    }
+}
+
+/// Six segments around the boost hexagon that light up as it charges.
+struct ChargeSegments: View {
+    let lit: Int
+    let on: Color
+
+    var body: some View {
+        Canvas { ctx, size in
+            let cx = Double(size.width) / 2
+            let cy = Double(size.height) / 2
+            let r = Double(min(size.width, size.height)) / 2 - 4
+            let pts = (0..<6).map { i -> CGPoint in
+                let a = Double(i) * Double.pi / 3 - Double.pi / 2
+                return CGPoint(x: cx + cos(a) * r, y: cy + sin(a) * r)
+            }
+            for i in 0..<6 {
+                let p = pts[i]
+                let q = pts[(i + 1) % 6]
+                var seg = Path()
+                seg.move(to: CGPoint(x: p.x + (q.x - p.x) * 0.2, y: p.y + (q.y - p.y) * 0.2))
+                seg.addLine(to: CGPoint(x: p.x + (q.x - p.x) * 0.8, y: p.y + (q.y - p.y) * 0.8))
+                ctx.stroke(seg, with: .color(Arcade.ink), style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                ctx.stroke(seg, with: .color(i < lit ? on : Color(red: 0.23, green: 0.25, blue: 0.3)), style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
