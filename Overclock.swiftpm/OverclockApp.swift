@@ -5,6 +5,10 @@ struct OverclockApp: App {
     @StateObject private var game = Game()
     @Environment(\.scenePhase) private var scenePhase
 
+    init() {
+        ArcadeFont.register()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

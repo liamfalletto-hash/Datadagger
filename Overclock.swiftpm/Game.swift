@@ -48,6 +48,8 @@ final class Game: ObservableObject {
     @Published private(set) var overclockReadyAt = Date.distantPast
     @Published private(set) var heatwaveUntil = Date.distantPast
     @Published private(set) var factQueue: [Fact] = []
+    /// Facts unlocked since you last opened the Facts tab.
+    @Published private(set) var unreadFacts = 0
     @Published var buyAmount: BuyAmount = .one
     @Published var speed: Double = 1
     @Published var offlineReport: OfflineReport?
@@ -329,6 +331,11 @@ final class Game: ObservableObject {
         guard !seenFacts.contains(id), let fact = Facts.byID(id) else { return }
         seenFacts.insert(id)
         factQueue.append(fact)
+        unreadFacts += 1
+    }
+
+    func markFactsRead() {
+        unreadFacts = 0
     }
 
     func dismissFact() {
@@ -430,6 +437,7 @@ final class Game: ObservableObject {
         nodeLevels = [:]
         seenFacts = []
         factQueue = []
+        unreadFacts = 0
         modelVersion = 1
         totalTaps = 0
         speed = 1
