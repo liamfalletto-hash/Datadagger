@@ -5,7 +5,8 @@
   const R = G.REF;
   const SAVE_KEY = "aether-save-v1";
   const params = new URLSearchParams(location.search);
-  const SPEED = Math.max(0.1, Math.min(50, Number(params.get("speed")) || 1));
+  // ?speed=5 (local file) or #fast (anywhere) speeds the game up for demos.
+  const SPEED = location.hash === "#fast" ? 5 : Math.max(0.1, Math.min(50, Number(params.get("speed")) || 1));
   const $ = (id) => document.getElementById(id);
   const fmt = E.fmtNum;
   const money = (n) => (n < 0 ? "−$" + fmt(-n) : "$" + fmt(n));
@@ -487,12 +488,11 @@
       </div>`;
     el.classList.remove("hidden");
     el.scrollTop = 0;
-    $("againBtn").addEventListener("click", () => newGame(false));
+    $("againBtn").addEventListener("click", () => newGame());
     el.onclick = (ev) => { if (ev.target.id !== "againBtn") el.classList.add("skip"); };
   }
 
-  function newGame(confirmFirst) {
-    if (confirmFirst && !window.confirm("Start a new game? Your current progress will be lost.")) return;
+  function newGame() {
     clearSave();
     st = E.newState();
     modalOpen = false;
@@ -538,7 +538,20 @@
   });
   $("offsetBtn").addEventListener("click", () => { if (!modalOpen) E.buyOffset(st); });
   document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => setTab(t.dataset.tab)));
-  $("restartBtn").addEventListener("click", () => newGame(true));
+  // Two-click confirmation (browser confirm() dialogs are blocked in some viewers).
+  let restartArmed = null;
+  $("restartBtn").addEventListener("click", () => {
+    const btn = $("restartBtn");
+    if (restartArmed) {
+      clearTimeout(restartArmed);
+      restartArmed = null;
+      btn.textContent = "↺ New game";
+      newGame();
+      return;
+    }
+    btn.textContent = "Click again to restart (progress will be lost)";
+    restartArmed = setTimeout(() => { restartArmed = null; btn.textContent = "↺ New game"; }, 3000);
+  });
   window.addEventListener("beforeunload", () => { if (!st.ended) save(); });
 
   /* ---------------- main loop ---------------- */
