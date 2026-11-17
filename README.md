@@ -18,6 +18,8 @@ Grow an AI company from one server rack to a planet-wide compute empire while th
 - Your building stands on real ground under a real sky: blue sky, green lawn and leafy trees at first, then grey smog with smokestacks on the horizon, then an orange sky over cracked dirt and dead trees.
 - The globe (🌍 button, or the final stage) is a realistic Earth built from Natural Earth coastlines (public domain). It has day and night, city lights, clouds, polar ice and an atmosphere glow. As Health falls, deserts spread, ice melts, coastal seas dry into seabed, haze thickens and wildfires appear.
 
+**Fold the shop away** to watch your world: tap the SHOP sign, swipe the panel down, or tap the menu button you're on. Tap any menu button (or swipe up) to bring it back.
+
 **Your base grows with you**, drawn in isometric 2.5D. You start as one guy with a server in his bedroom. At 5 servers you move to a Warehouse, then a Server Hall (first Office Data Center), a riverside Campus (first Hyperscale Campus), and a Horizon Megacenter rising over the planet's curve (first Coal-Powered Megafarm). The Planetary Compute Core turns the whole globe into the data center. Every move gets a "Moving day!" banner.
 
 **Gameplay** (from the design doc):

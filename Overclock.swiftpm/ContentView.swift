@@ -4,6 +4,7 @@ struct ContentView: View {
     @EnvironmentObject var game: Game
     @State private var tab: Tab = .shop
     @State private var showPlanet = false
+    @State private var shopOpen = true
 
     enum Tab: String, CaseIterable, Identifiable {
         case shop, model, facts, dev
@@ -56,12 +57,14 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { geo in
             let safeTop = geo.safeAreaInsets.top
-            let worldHeight = max(300, geo.size.height * 0.5)
+            let openWorld = max(300, geo.size.height * 0.5)
+            // Folded, the shop shrinks to just the menu buttons and the world fills the rest.
+            let foldedWorld = max(openWorld, geo.size.height - 104)
             VStack(spacing: 0) {
                 WorldArea(showPlanet: $showPlanet, safeTop: safeTop)
-                    .frame(height: worldHeight + safeTop)
+                    .frame(height: (shopOpen ? openWorld : foldedWorld) + safeTop)
                     .padding(.top, -safeTop)
-                ShopSheet(tab: $tab, tabs: tabs)
+                ShopSheet(tab: $tab, open: $shopOpen, tabs: tabs)
                     .padding(.top, -26)
             }
         }
@@ -347,27 +350,33 @@ struct BoostButton: View {
 struct ShopSheet: View {
     @Environment(\.earthHealth) var health
     @Binding var tab: ContentView.Tab
+    @Binding var open: Bool
     let tabs: [ContentView.Tab]
 
     var body: some View {
         let decay = 1 - health / 100
         let shape = TopRounded(radius: 26)
         VStack(spacing: 8) {
-            ScrollView {
-                VStack(spacing: 14) {
-                    switch tab {
-                    case .shop: ShopTab()
-                    case .model: ModelTab()
-                    case .facts: FactsTab()
-                    case .dev: DevTab()
+            if open {
+                ScrollView {
+                    VStack(spacing: 14) {
+                        switch tab {
+                        case .shop: ShopTab()
+                        case .model: ModelTab()
+                        case .facts: FactsTab()
+                        case .dev: DevTab()
+                        }
                     }
+                    .padding(.horizontal, 12)
+                    .padding(.top, 36)
+                    .padding(.bottom, 14)
                 }
-                .padding(.horizontal, 12)
-                .padding(.top, 36)
-                .padding(.bottom, 14)
+                .scrollIndicators(.hidden)
+                .transition(.opacity)
+            } else {
+                Spacer(minLength: 30)
             }
-            .scrollIndicators(.hidden)
-            TabBar(selection: $tab, tabs: tabs)
+            TabBar(selection: $tab, open: $open, tabs: tabs)
                 .padding(.horizontal, 12)
                 .padding(.bottom, 2)
         }
@@ -386,37 +395,71 @@ struct ShopSheet: View {
             .ignoresSafeArea(edges: .bottom)
         )
         .overlay(alignment: .top) {
-            TitleBlock(text: tab.panelTitle)
-                .offset(y: -24)
+            // A strip along the top of the panel you can swipe to fold or open it.
+            Color.clear
+                .frame(height: 32)
+                .contentShape(Rectangle())
+                .gesture(foldDrag)
         }
+        .overlay(alignment: .top) {
+            Button {
+                setOpen(!open)
+            } label: {
+                TitleBlock(text: tab.panelTitle, chevron: open ? "chevron.down" : "chevron.up")
+            }
+            .buttonStyle(PressScale())
+            .simultaneousGesture(foldDrag)
+            .offset(y: -24)
+            .accessibilityLabel(open ? "Fold the \(tab.title.lowercased()) panel down" : "Open the \(tab.title.lowercased()) panel")
+        }
+    }
+
+    private var foldDrag: some Gesture {
+        DragGesture(minimumDistance: 12)
+            .onEnded { value in
+                if value.translation.height > 40 { setOpen(false) }
+                if value.translation.height < -40 { setOpen(true) }
+            }
+    }
+
+    private func setOpen(_ value: Bool) {
+        guard value != open else { return }
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) { open = value }
     }
 }
 
 struct TitleBlock: View {
     let text: String
+    var chevron: String? = nil
     @Environment(\.earthHealth) var health
 
     var body: some View {
         let decay = 1 - health / 100
         let shape = RoundedRectangle(cornerRadius: 14, style: .continuous)
-        StrokeText(text, size: 26)
-            .frame(minWidth: 140)
-            .padding(.horizontal, 14)
-            .frame(height: 48)
-            .background(
-                ZStack {
-                    ArcadeFace(top: Palette.c(Arcade.headerTop, health), bottom: Palette.c(Arcade.headerBottom, health), radius: 14)
-                    Wear(seed: 5).clipShape(shape)
-                }
-            )
-            .background(shape.fill(Arcade.ink).offset(y: 5))
-            .rotationEffect(.degrees(-6 * max(0, decay - 0.3)))
+        HStack(spacing: 6) {
+            StrokeText(text, size: 26)
+            if let chevron = chevron {
+                OutlinedSymbol(chevron, size: 14)
+            }
+        }
+        .frame(minWidth: 140)
+        .padding(.horizontal, 14)
+        .frame(height: 48)
+        .background(
+            ZStack {
+                ArcadeFace(top: Palette.c(Arcade.headerTop, health), bottom: Palette.c(Arcade.headerBottom, health), radius: 14)
+                Wear(seed: 5).clipShape(shape)
+            }
+        )
+        .background(shape.fill(Arcade.ink).offset(y: 5))
+        .rotationEffect(.degrees(-6 * max(0, decay - 0.3)))
     }
 }
 
 struct TabBar: View {
     @EnvironmentObject var game: Game
     @Binding var selection: ContentView.Tab
+    @Binding var open: Bool
     let tabs: [ContentView.Tab]
 
     var body: some View {
@@ -424,7 +467,14 @@ struct TabBar: View {
             ForEach(tabs) { tab in
                 let selected = tab == selection
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { selection = tab }
+                    withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
+                        if selected && open {
+                            open = false
+                        } else {
+                            selection = tab
+                            open = true
+                        }
+                    }
                 } label: {
                     VStack(spacing: -2) {
                         OutlinedSymbol(tab.symbol, size: 22)
@@ -434,12 +484,12 @@ struct TabBar: View {
                     .frame(height: 64)
                     .overlay(
                         RoundedRectangle(cornerRadius: 11, style: .continuous)
-                            .strokeBorder(Color.white.opacity(selected ? 0.95 : 0), lineWidth: 3)
+                            .strokeBorder(Color.white.opacity(selected && open ? 0.95 : 0), lineWidth: 3)
                             .padding(5)
                     )
                 }
                 .buttonStyle(ArcadeButtonStyle(tint: tab.tint, radius: 16))
-                .scaleEffect(selected ? 1.04 : 0.96)
+                .scaleEffect(selected && open ? 1.04 : 0.96)
                 .overlay(alignment: .topTrailing) {
                     let count = badge(for: tab)
                     if count > 0 {
