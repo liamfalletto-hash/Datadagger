@@ -1,0 +1,71 @@
+/* Full-screen world with panels floating on top, and a news bar along the bottom. */
+html, body { background: #9fd8f2; }
+body { padding: 0; min-height: 100vh; overflow-x: hidden; }
+
+.world { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: #9fd8f2; }
+.world[hidden] { display: none; }
+.world .scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
+.world .bubble { z-index: 2; }
+.world .floater { z-index: 3; }
+
+.app { position: relative; z-index: 1; max-width: none; margin: 0; min-height: 100vh; align-content: start;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) 80px max(16px, env(safe-area-inset-left, 0px));
+  grid-template-columns: 300px minmax(0, 1fr) 390px; grid-template-areas: "hud hud hud" "left . shop"; pointer-events: none; }
+.app > *, .hud > * { pointer-events: auto; }
+.hud { pointer-events: none; }
+.hud-spacer { flex: 0 0 200px; pointer-events: none; }
+.chip.big b { font-size: 26px; }
+.chip.big .ico { width: 42px; height: 42px; }
+.chip.flash { background: #fde3dc; animation: shake .4s; }
+@keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.left { align-self: start; max-height: calc(100vh - 175px); overflow-y: auto; padding-bottom: 4px; }
+.shop { align-self: start; }
+.panel-body { max-height: calc(100vh - 250px); }
+
+/* Compact cards */
+.rank-big b { font-size: 40px; }
+.rank-list { font-size: 14px; }
+.sus-score { display: flex; align-items: center; gap: 10px; margin: 2px 0 6px; }
+.sus-score svg { width: 96px; flex: none; }
+.sus-score b { font: 600 44px/1 var(--display); }
+.sus-score .pill { display: inline-block; margin-top: 4px; }
+.sus-fines { margin: 4px 0 8px; padding: 6px 10px; border: 2.5px solid var(--ink); border-radius: 12px; font-size: 13.5px; font-weight: 800; background: var(--mint-soft); }
+.sus-fines.bad { background: #fde3dc; color: var(--coral-dark); }
+.sus-size { margin: 0 0 8px; font-size: 12.5px; color: var(--muted); }
+.item h3 { font-size: 17px; }
+.item .earn-line { margin: 2px 0 5px; font-size: 13.5px; font-weight: 800; color: var(--go-dark); }
+.owned-line { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); text-align: center; }
+.fact.unread { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.fact.unread h3 { margin: 0; }
+.fact.unread .buy { margin: 0; flex: none; }
+
+/* News bar */
+.newsbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; height: 60px; display: flex; align-items: center; overflow: hidden;
+  background: var(--paper); border-top: 3px solid var(--ink); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.newsbar[hidden] { display: none; }
+.newsbar .ticker-tag { align-self: stretch; display: grid; place-items: center; padding: 0 22px; background: var(--coral); color: #fff; border-right: 3px solid var(--ink); font: 600 20px/1 var(--display); letter-spacing: .08em; }
+.newsbar .ticker-track { flex: 1; overflow: hidden; white-space: nowrap; }
+.newsbar .ticker-track p { display: inline-block; margin: 0; font: 800 19px/1 var(--body); animation: tick 75s linear infinite; }
+
+/* Toast for fines */
+.toast.fine { background: #fde3dc; }
+.toast.fine b { color: var(--coral-dark); font-size: 20px; }
+
+@media (max-width: 1240px) {
+  .app { grid-template-columns: 270px minmax(0, 1fr) 340px; grid-template-areas: "hud hud hud" "left . shop"; }
+  .hud-spacer { display: none; }
+}
+@media (max-width: 900px) {
+  .world { position: relative; height: 58vh; }
+  .app { pointer-events: auto; min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-areas: "hud" "left" "shop"; padding-bottom: 70px; }
+  .left, .panel-body { max-height: none; }
+  .left { grid-template-columns: minmax(0, 1fr); }
+  .newsbar { height: 46px; }
+  .newsbar .ticker-tag { font-size: 14px; padding: 0 12px; }
+  .newsbar .ticker-track p { font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) { .newsbar .ticker-track p { animation: none; } }
+
+/* Notices sit just above the news bar, away from the HUD. */
+.toasts { top: auto; bottom: 74px; }
+@media (max-width: 900px) { .toasts { bottom: 56px; } }

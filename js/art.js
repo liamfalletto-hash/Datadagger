@@ -127,8 +127,8 @@
     if (kind === "cactus") {
       return `<g transform="translate(${f1(tx)} ${f1(ty)}) scale(${k})"><path d="M-5 0v-38a5 5 0 0 1 10 0V0z" fill="${mix("#6aa857", "#a39a62", p)}"/><path d="M-5 -20h-6a4 4 0 0 1-4-4v-8a3 3 0 0 1 6 0v6h4zM5 -16h6a4 4 0 0 0 4-4v-6a3 3 0 0 0-6 0v4H5z" fill="${mix("#6aa857", "#a39a62", p)}"/></g>`;
     }
-    if (p > 0.7) {
-      return `<g transform="translate(${f1(tx)} ${f1(ty)}) scale(${k})"><path d="M-3 0v-30h6V0z" fill="#7a5233"/><path d="M0 -26l-12-12M0 -22l11-10M-6 -32l-2-8M5 -29l6-3" fill="none" stroke-width="3"/></g>`;
+    if (p > 0.6) {
+      return `<g transform="translate(${f1(tx)} ${f1(ty)}) scale(${k})"><path d="M-3 0v-30h6V0z" fill="#7a5233"/><path d="M0 -26l-12-12M0 -22l11-10M-6 -32l-2-8M5 -29l6-3" fill="none" stroke-width="3"/></g>` + (p > 0.82 ? flame(tx, ty - 6, k * 0.9) : "");
     }
     if (kind === "pine") {
       const c = mix("#3f8a5a", "#7d7458", p);
@@ -138,40 +138,60 @@
     return `<g transform="translate(${f1(tx)} ${f1(ty)}) scale(${k})"><rect x="-3.5" y="-26" width="7" height="26" fill="#7a5233"/><circle cx="-10" cy="${-32 * r}" r="${13 * r}" fill="${c2}"/><circle cx="9" cy="${-34 * r}" r="${14 * r}" fill="${c2}"/><circle cx="0" cy="${-46 * r}" r="${16 * r}" fill="${c1}"/></g>`;
   }
 
-  /* Sky, rainbow, hills and a big iso ground tile. opts: { biome, rainbow, town, smoke } */
+  /* Full-screen landscape: sky, rainbow, hills, town, ground. Drawn far beyond
+   * the room so it fills any screen. Pollution (p) greys it, then sets it on fire. */
+  const flame = (x, y, k) => `<g transform="translate(${f1(x)} ${f1(y)}) scale(${k})"><path d="M0 0c-14 0-20-12-14-26 4-10 10-14 10-26 10 8 16 18 14 30 4-4 6-8 6-14 8 8 12 18 8 28-4 6-12 8-24 8z" fill="#ef6a3a"/><path d="M0 -4c-6 0-9-6-6-12 2-5 5-7 5-12 5 4 8 9 7 15 2-2 3-4 3-7 4 4 5 9 3 13-2 2-6 3-12 3z" fill="#f6c445" stroke="none"/><animateTransform attributeName="transform" type="scale" additive="sum" values="1 1;1.05 0.92;1 1" dur="${(0.6 + (x % 5) * 0.08).toFixed(2)}s" repeatCount="indefinite"/></g>`;
+  const smokeCol = (x, y, n, dur) => { let o = ""; for (let i = 0; i < n; i++) o += `<circle cx="${x + i * 10}" cy="${y - i * 22}" r="${12 + i * 7}" fill="#6f665e" opacity=".7" stroke="none"><animate attributeName="cy" values="${y - i * 22};${y - 30 - i * 22};${y - i * 22}" dur="${dur + i}s" repeatCount="indefinite"/></circle>`; return o; };
+  function hills(base, amp, phase, col, outline) {
+    let d = `M-700 ${base + 500}L-700 ${base}`;
+    for (let x = -700; x < 1700; x += 220) {
+      const h = amp * (0.55 + 0.45 * Math.sin((x + phase) * 0.0131));
+      d += ` Q${x + 110} ${f1(base - h * 2)} ${x + 220} ${base}`;
+    }
+    d += ` L1700 ${base + 500}Z`;
+    return `<path d="${d}" fill="${col}" stroke="${outline ? INK : "none"}" stroke-opacity=".25"/>`;
+  }
   function landscape(I, p, opts = {}) {
     const B = BIOMES[opts.biome || "grass"];
-    const sky = skyColors(p), ground = mix(B.ground, B.dry, p);
-    let s = `<rect x="-10" y="-10" width="980" height="710" fill="${sky.top}" stroke="none"/><rect x="-10" y="210" width="980" height="480" fill="${sky.bottom}" stroke="none"/>`;
-    s += `<circle cx="830" cy="92" r="34" fill="${p > 0.55 ? "#e8714f" : mix("#ffd451", "#f2b35b", p)}"/>`;
-    const rainbowOpacity = opts.rainbow ? Math.max(0, 1 - p * 4) : 0;
-    if (rainbowOpacity > 0.02) {
+    const sky = skyColors(p), ground = mix(B.ground, B.dry, Math.min(1, p * 1.3));
+    let s = `<rect x="-700" y="-600" width="2400" height="1100" fill="${sky.top}" stroke="none"/><rect x="-700" y="160" width="2400" height="400" fill="${sky.bottom}" stroke="none"/>`;
+    s += `<circle cx="1030" cy="30" r="46" fill="${p > 0.8 ? "#d9502f" : p > 0.5 ? "#e8714f" : mix("#ffd451", "#f2b35b", p)}"/>`;
+    const ro = opts.rainbow ? Math.max(0, 1 - p * 3.2) : 0;
+    if (ro > 0.02) {
       const cols = ["#ef6f6c", "#f5a35c", "#f6d55c", "#7cc36b", "#6fa8e8", "#9a7de2"];
-      s += `<g fill="none" stroke-width="10" opacity="${rainbowOpacity.toFixed(2)}" stroke-linecap="butt">` + cols.map((c, i) => { const r = 470 - i * 10; return `<path d="M${480 - r} 470A${r} ${r} 0 0 1 ${480 + r} 470" stroke="${c}"/>`; }).join("") + `</g>`;
+      s += `<g fill="none" stroke-width="16" opacity="${ro.toFixed(2)}">` + cols.map((c, i) => { const r = 700 - i * 16; return `<path d="M${480 - r} 520A${r} ${r} 0 0 1 ${480 + r} 520" stroke="${c}"/>`; }).join("") + `</g>`;
     }
-    s += cloud(150, 120, 1.0, 18, 26, mix("#ffffff", "#c9b8a6", p)) + cloud(700, 60, 0.8, -16, 31, mix("#ffffff", "#c9b8a6", p)) + cloud(60, 230, 0.7, 12, 23, mix("#ffffff", "#c9b8a6", p));
-    if (p < 0.2) s += `<g fill="none" stroke-width="2.2"><path d="M300 80q6-6 12 0q6-6 12 0"/><path d="M335 64q5-5 10 0q5-5 10 0"/><path d="M640 120q6-6 12 0q6-6 12 0"/></g>`;
-    // Ground tile (covers the lower half), then hills that hide its far edges.
-    s += `<polygon points="${[[-7, -7], [15, -7], [15, 15], [-7, 15]].map(([x, y]) => I.P(x, y, -0.3).map(f1).join(",")).join(" ")}" fill="${ground}" stroke="none"/>`;
-    const h1 = mix(B.hill1, B.dry, p * 0.9), h2 = mix(B.hill2, shade(B.dry, 0.9), p * 0.9);
-    s += `<path d="M-10 300 C 60 230 140 250 210 285 C 260 230 330 225 380 270 L380 420 L-10 420Z" fill="${h1}" stroke="none"/>`;
-    s += `<path d="M580 270 C 640 220 720 230 780 275 C 840 240 910 245 970 290 L970 420 L580 420Z" fill="${h1}" stroke="none"/>`;
-    s += `<path d="M-10 300 C 60 230 140 250 210 285 C 260 230 330 225 380 270M580 270 C 640 220 720 230 780 275 C 840 240 910 245 970 290" fill="none" stroke-opacity=".35"/>`;
-    s += `<path d="M-10 350 C 80 300 170 320 260 345 C 300 330 340 330 380 345 L380 440 L-10 440Z" fill="${h2}" stroke="none"/>`;
-    s += `<path d="M580 345 C 650 315 730 320 800 345 C 860 320 920 325 970 345 L970 440 L580 440Z" fill="${h2}" stroke="none"/>`;
-    s += `<path d="M-10 395 C 100 370 260 375 380 390 L380 470 L-10 470Z M580 390 C 700 372 850 372 970 392 L970 470 L580 470Z" fill="${ground}" stroke="none"/>`;
+    const cc = mix("#ffffff", "#a8968a", p);
+    s += cloud(-60, 60, 1.2, 18, 26, cc) + cloud(260, -20, 0.9, -16, 31, cc) + cloud(820, 110, 1.0, 14, 28, cc) + cloud(1160, 160, 1.3, -12, 33, cc) + cloud(1300, -40, 0.9, 10, 24, cc);
+    if (p < 0.2) s += `<g fill="none" stroke-width="2.4"><path d="M120 120q7-7 14 0q7-7 14 0"/><path d="M160 100q6-6 12 0q6-6 12 0"/><path d="M900 40q7-7 14 0q7-7 14 0"/><path d="M1180 260q6-6 12 0q6-6 12 0"/></g>`;
+    const h1 = mix(B.hill1, B.dry, p), h2 = mix(B.hill2, shade(B.dry, 0.9), p), hz = opts.horizon || 400;
+    s += `<g transform="translate(0 ${hz - 400})">` + hills(300, 34, 0, h1, true);
+    // Distant trees and houses on the hills.
+    const tc = mix("#5fae55", "#8a7a52", p), dead = p > 0.6;
+    for (const x of [-560, -470, -260, -150, 1120, 1230, 1400, 1490]) {
+      s += dead ? `<path d="M${x} 352v-30M${x} 334l-8-8M${x} 330l7-9" fill="none" stroke="#7a5233" stroke-width="3"/>` : `<rect x="${x - 2}" y="330" width="4" height="22" fill="#7a5233" stroke="none"/><circle cx="${x}" cy="322" r="15" fill="${tc}"/>`;
+    }
     if (opts.town) {
       const wall = mix("#f4ead8", "#c9bba5", p), roof = mix("#d06a50", "#8f6a55", p);
-      s += [[640, 300], [690, 296], [745, 305], [80, 318], [130, 312]].map(([x, y], i) => `<rect x="${x}" y="${y}" width="${34 - i * 2}" height="${26 + (i % 2) * 8}" fill="${wall}"/><path d="M${x - 3} ${y}l${(34 - i * 2) / 2 + 3} -14 ${(34 - i * 2) / 2 + 3} 14z" fill="${roof}"/>`).join("");
+      s += [[-380, 318], [-330, 312], [-60, 322], [1040, 316], [1090, 322], [1330, 318]].map(([x, y], i) => { const w = 34 - (i % 3) * 3; return `<rect x="${x}" y="${y}" width="${w}" height="${28 + (i % 2) * 8}" fill="${wall}"/><path d="M${x - 3} ${y}l${w / 2 + 3} -14 ${w / 2 + 3} 14z" fill="${roof}"/>`; }).join("");
     }
-    if (opts.smoke) {
-      s += `<rect x="860" y="250" width="14" height="70" fill="#9aa4ae"/><rect x="884" y="262" width="12" height="58" fill="#9aa4ae"/>`;
-      for (let i = 0; i < 3; i++) s += `<circle cx="${867 + i * 12}" cy="${235 - i * 18}" r="${10 + i * 5}" fill="#8a8178" stroke="none" opacity=".7"><animate attributeName="cy" values="${235 - i * 18};${205 - i * 18};${235 - i * 18}" dur="${4 + i}s" repeatCount="indefinite"/></circle>`;
+    if (opts.smoke || p > 0.45) {
+      s += `<rect x="-230" y="270" width="16" height="90" fill="#9aa4ae"/><rect x="-204" y="286" width="13" height="74" fill="#9aa4ae"/>` + smokeCol(-222, 252, 4, 4);
+      if (p > 0.6) s += `<rect x="1250" y="262" width="16" height="96" fill="#9aa4ae"/>` + smokeCol(1258, 244, 4, 5);
+    }
+    s += hills(390, 22, 900, h2, false) + `</g>`;
+    s += `<rect x="-700" y="${hz}" width="2400" height="${1200 - hz}" fill="${ground}" stroke="none"/>`;
+    // Dry cracks when it gets bad.
+    if (p > 0.55) s += `<g fill="none" stroke="${shade(ground, 0.75)}" stroke-width="2">` + [[-300, 520], [-120, 700], [1060, 560], [1260, 720], [80, 760], [900, 760]].map(([x, y]) => `<path d="M${x} ${y}l20 6 8 14 16 2M${x + 20} ${y + 6}l10 -12"/>`).join("") + `</g>`;
+    if (p > 0.75) {
+      const n = Math.round(((p - 0.75) / 0.25) * 10) + 2;
+      const spots = [[130, 470], [840, 480], [480, 780], [70, 610], [900, 620], [250, 710], [720, 710], [20, 430], [950, 440], [180, 800], [800, 805], [-100, 530]];
+      s += spots.slice(0, n).map(([x, y], i) => flame(x, y, 0.9 + (i % 3) * 0.3)).join("");
     }
     return s;
   }
-  // Smog over the whole scene.
-  const smog = (p) => (p > 0.15 ? `<rect x="-10" y="-10" width="980" height="710" fill="#8a6a4a" opacity="${(Math.min(0.42, (p - 0.15) * 0.55)).toFixed(2)}" stroke="none" pointer-events="none"/>` : "");
+  // Smog over the whole scene; it turns orange when things burn.
+  const smog = (p) => (p > 0.15 ? `<rect x="-700" y="-600" width="2400" height="1800" fill="${mix("#8a6a4a", "#a8452a", (p - 0.6) / 0.4)}" opacity="${Math.min(0.5, (p - 0.15) * 0.62).toFixed(2)}" stroke="none" pointer-events="none"/>` : "");
 
   /* ---------- People (seated, facing the desk at +x) ---------- */
   const SKINS = ["#eab68c", "#c98b5e", "#8d5a3b", "#f2c9a0"];
@@ -218,5 +238,5 @@
     return s;
   }
 
-  root.AetherArt = { INK, f1, shade, mix, esc, makeIso, txt, PATHS, icon, medal, ART, landscape, smog, tree, cloud, seatedBody, seatedArms, deskUnit, SKINS };
+  root.AetherArt = { INK, f1, shade, mix, esc, makeIso, txt, PATHS, icon, medal, ART, landscape, smog, tree, cloud, flame, seatedBody, seatedArms, deskUnit, SKINS };
 })(window);

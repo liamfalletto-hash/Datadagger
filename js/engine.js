@@ -23,7 +23,7 @@
       factors: { ci: 0.45, pue: 1.5, wue: 0.5, lifespan: 1095, powerMult: 1, biome: "grass" },
       footprint: { kwh: 0, co2: 0, water: 0, ewaste: 0 }, footprintAtReveal: null,
       facts: [], read: [], asked: [], pressRight: 0, pressWrong: 0,
-      goalsDone: [], badges: [], rank: 1200, passed: [],
+      goalsDone: [], badges: [], rank: 1200, passed: [], finesPaid: 0, finesCount: 0,
       news: [], recentNews: [], queue: [], toasts: [], triggered: {},
       timers: { news: 6, fine: 90, heat: 70, good: 80, press: 70 },
       heatUntil: 0, ended: false, ending: null,
@@ -32,16 +32,19 @@
 
   /* ---------------- derived values ---------------- */
 
+  // Small companies start clean (85). Growing (more power) and dirty choices pull the score down.
+  const BASE_S = 85;
+  function sizePressure(st) { return Math.max(0, Math.round(4 * (Math.log10(Math.max(1, facilityPowerKW(st))) - 1.5))); }
   function sustainability(st) {
-    let s = 50 + st.sBonus;
+    let s = BASE_S + st.sBonus - sizePressure(st);
     for (const [id, idx] of Object.entries(st.decisions)) s += (decById[id].options[idx].s || 0);
     for (const id in st.upgrades) s += upById[id].s || 0;
     for (const id of st.green) s += greenById[id].s;
     return clamp(Math.round(s), 0, 100);
   }
 
-  // Cutting corners pays: ×1.3 income at 0 sustainability, ×0.7 at 100.
-  function sMult(st) { return st.revealed ? 1 + ((50 - sustainability(st)) / 50) * 0.3 : 1; }
+  // Green upgrades cost a share of income.
+  function greenMult(st) { let m = 1; for (const id of st.green) m *= greenById[id].income || 1; return m; }
 
   // Footprint factors after decisions and green upgrades.
   function eff(st) {
@@ -67,7 +70,7 @@
     return m;
   }
   const heatMult = (st) => (st.day < st.heatUntil ? 0.7 : 1);
-  function genIncome(st, gid) { return genById[gid].income * genMult(st, gid) * allMult(st) * sMult(st) * heatMult(st); }
+  function genIncome(st, gid) { return genById[gid].income * genMult(st, gid) * allMult(st) * greenMult(st) * heatMult(st); }
   function incomePerSec(st) { let t = 0; for (const g of G.generators) if (st.owned[g.id]) t += st.owned[g.id] * genIncome(st, g.id); return t; }
   function clickValue(st) {
     let m = 1;
@@ -119,10 +122,22 @@
   function endingFor(st) { const s = sustainability(st); return s >= G.endings.good.min ? "good" : s >= G.endings.mid.min ? "mid" : "bad"; }
 
   // How dirty the world around you looks (0 = pristine, 1 = ruined).
+  // 85+ pristine, 50 a little grey, below 40 clearly damaged, below 15 on fire.
+  const POLLUTION_CURVE = [[100, 0], [85, 0], [50, 0.3], [40, 0.45], [15, 0.8], [0, 1]];
   function pollution(st) {
-    if (!st.revealed) return Math.min(0.2, (st.footprint.co2 / 1000) * 0.05);
-    const i = st.stage - 1, base = [0, 0.05, 0.1, 0.15, 0.2][i], k = [0, 0.45, 0.6, 0.75, 0.8][i];
-    return clamp(base + (1 - sustainability(st) / 100) * k, 0, 1);
+    if (!st.revealed) return Math.min(0.12, (st.footprint.co2 / 1000) * 0.03);
+    const s = sustainability(st);
+    for (let i = 0; i < POLLUTION_CURVE.length - 1; i++) {
+      const [s1, p1] = POLLUTION_CURVE[i], [s2, p2] = POLLUTION_CURVE[i + 1];
+      if (s <= s1 && s >= s2) return p1 + ((p2 - p1) * (s1 - s)) / (s1 - s2);
+    }
+    return 1;
+  }
+  // Fines after the first one: the lower the score, the more often and the bigger.
+  function fineRate(st) {
+    const s = sustainability(st);
+    if (!st.revealed || s >= 65) return null;
+    return { every: 10 + s * 0.6, share: (0.5 * (65 - s)) / 65 };
   }
 
   // World ranking: climbs on a log scale through each stage.
@@ -408,20 +423,27 @@
     if (st.stage > 1 || stageInfo(st).progress > 0.5) {
       if ((t.press -= dt) <= 0) {
         const fid = nextPressFact(st);
-        if (fid && !st.queue.some((q) => q.type === "press")) { st.queue.push({ type: "press", fact: fid }); t.press = 100 + Math.random() * 40; }
+        if (fid && !st.queue.some((q) => q.type === "press")) {
+          const order = [0, 1, 2].sort(() => Math.random() - 0.5);
+          st.queue.push({ type: "press", fact: fid, order });
+          t.press = 100 + Math.random() * 40;
+        }
         else t.press = 20;
       }
     }
-    if (!st.revealed || st.stage < 3) return;
+    if (!st.revealed || !st.triggered.fine) return;
     if ((t.fine -= dt) <= 0) {
-      t.fine = 60 + Math.random() * 40;
-      if (s < 40) {
-        const amount = Math.round(Math.max(st.cash * 0.12, incomePerSec(st) * 10));
-        st.cash -= amount;
-        addNews(st, `Regulator fines {name} $${fmtNum(amount)} for breaking pollution limits.`, "bad");
-        toast(st, `Fined $${fmtNum(amount)} for breaking pollution limits (sustainability below 40).`, "bad");
-      }
+      const r = fineRate(st);
+      if (r) {
+        const amount = Math.round(Math.max(50, incomePerSec(st) * r.share * r.every));
+        st.cash -= amount; st.finesPaid += amount; st.finesCount++;
+        st.toasts.push({ type: "fine", amount });
+        const tpl = G.news.fines[Math.floor(Math.random() * G.news.fines.length)];
+        addNews(st, tpl.split("{fine}").join("$" + fmtNum(amount)), "bad");
+        t.fine = r.every * (0.8 + Math.random() * 0.4);
+      } else t.fine = 8;
     }
+    if (st.stage < 3) return;
     if ((t.heat -= dt) <= 0) {
       t.heat = 55 + Math.random() * 40;
       if (Math.random() < (100 - s) / 100) {
@@ -509,7 +531,7 @@
   root.Engine = {
     newState, cleanName, tick, click, buyGen, buyGenN, buyUpgrade, buyGreen, readFact, decide, buyOffset,
     claimGoal, answerPress, moveStage, finish, earnBadge,
-    sustainability, sMult, eff, incomePerSec, genIncome, genMult, stars, clickValue, itPowerKW, facilityPowerKW, users,
+    sustainability, sizePressure, greenMult, fineRate, eff, incomePerSec, genIncome, genMult, stars, clickValue, itPowerKW, facilityPowerKW, users,
     genCost, genCostN, maxAffordable, stageInfo, visibleGenerators, upgradeStatus, aiUpgrades, greenUpgrades, greenStatus, greenCost,
     offsetCost, endingFor, pollution, rankFor, boardAt, currentGoal, goalProgress, currentPrompt, fill, addNews, unlockFact,
     fmtNum, fmtEnergy, fmtPower, fmtMass, fmtWater, serialize, deserialize, genById, upById, greenById, decById,

@@ -50,8 +50,8 @@
       $("introFrame").classList.add("shrink");
       box.classList.add("fade");
       App.start(st);
-      const stage = $("stage"), z = App.zoom || [480, 345];
-      stage.style.transformOrigin = `${(z[0] / 960) * 100}% ${(z[1] / 690) * 100}%`;
+      const stage = $("world"), z = App.toScreen(App.zoom || [480, 345]);
+      stage.style.transformOrigin = `${z[0]}px ${z[1]}px`;
       stage.style.transform = "scale(2.6)";
       stage.getBoundingClientRect();
       stage.classList.add("stage-zoom");
@@ -64,7 +64,7 @@
     App.modalOpen = true;
     $("modalCard").className = "modal-card card";
     $("modalCard").innerHTML = head("garage", "Stage 1 of 5", "The Garage") +
-      `<p>${fill(G.stages[0].intro)}</p><ul class="howto"><li><b>Tap the speech bubble</b> to answer prompts and earn money.</li><li><b>Buy hardware</b> on the right. It appears in your garage.</li><li><b>Fill the progress bar</b> at the top, then move to the next place. Climb the world ranking on the left.</li><li><b>Read the real facts.</b> Journalists will ask about them.</li></ul><button class="buy" data-close-simple>Let's go</button>`;
+      `<ul class="howto"><li><b>Tap the speech bubble</b> to earn money.</li><li><b>Buy hardware</b> on the right.</li><li><b>Fill the bar</b> at the top to move on.</li></ul><button class="buy" data-close-simple>Let's go</button>`;
     $("modal").classList.remove("hidden");
   }
 
@@ -81,18 +81,18 @@
       card.classList.add("alert");
       const fp = st.footprint;
       h = head("note", "Breaking news", `${A.esc(st.name)} has been fined`, "#fde3dc") + `<div class="big-fine">−${money(item.amount)}</div>` +
-        `<p>The environment agency fined you for not reporting the electricity your servers use. A new law: every AI company must now <b>measure and publish its environmental impact</b>.</p>${factBox("reporting")}` +
-        `<h3 style="margin:12px 0 4px;font-family:var(--display)">New: your Sustainability score</h3><ul class="howto"><li><b>Polluting pays.</b> A low score boosts income (up to ×1.3), a high score slows it (down to ×0.7).</li><li><b>Your score decides the ending.</b> 70 or more: good ending. Below 40: bad ending.</li><li><b>Green upgrades</b> are now in the shop. Read their real fact to unlock each one.</li></ul>` +
-        `<p>Since day 1, while nobody was counting, you have used:</p><div class="mini-grid"><div>Electricity<b>${E.fmtEnergy(fp.kwh)}</b>${App.eq.energy(fp.kwh)}</div><div>CO₂<b>${E.fmtMass(fp.co2)}</b>${App.eq.co2(fp.co2)}</div></div>${factBox("co2Volume")}<button class="buy" data-close>Got it</button>`;
+        `<p>You didn't report your energy use. From now on, AI companies must <b>measure their impact</b>.</p>` +
+        `<h3 style="margin:12px 0 4px;font-family:var(--display)">New: your Sustainability score (${E.sustainability(st)})</h3><ul class="howto"><li>Growing and dirty choices <b>lower it</b>. Green upgrades <b>raise it</b>.</li><li>Below 65 you get <b>fined</b>, more often the lower it goes.</li><li>It decides the <b>ending</b>: 70+ good, below 40 bad.</li></ul>` +
+        `<div class="mini-grid"><div>CO₂ so far<b>${E.fmtMass(fp.co2)}</b>${App.eq.co2(fp.co2)}</div><div>Electricity so far<b>${E.fmtEnergy(fp.kwh)}</b>${App.eq.energy(fp.kwh)}</div></div><button class="buy" data-close>Got it</button>`;
     } else if (item.type === "decision") {
       const d = E.decById[item.id], inc = E.incomePerSec(st);
       h = head(d.icon, "Decision", d.title) + `<p>${fill(st.factors.biome === "desert" && d.textDesert ? d.textDesert : d.text)}</p>${factBox(d.fact)}<div class="opts">` +
         d.options.map((o, i) => `<button class="opt" data-opt="${i}"><b>${o.label}</b><span>${o.detail}</span><div class="chips-row">${sChip(o.s)}${o.costFrac ? `<span class="chip-s neg">−${money(Math.max(0, st.cash) * o.costFrac)}</span>` : ""}${o.bonusSec ? `<span class="chip-s gold">+${money(inc * o.bonusSec)}</span>` : ""}</div></button>`).join("") +
-        `</div><p class="hint">Your sustainability is ${E.sustainability(st)}. Lower means more money now, but a worse ending.</p>`;
+        `</div><p class="hint">Your sustainability: <b>${E.sustainability(st)}</b></p>`;
     } else if (item.type === "press") {
       const q = G.press[item.fact], read = st.read.includes(item.fact);
       h = head("mic", "Press conference", "A journalist has a question", "var(--blue-soft)") + `<p style="font-family:var(--display);font-size:19px">“${q.q}”</p>` +
-        `<div class="opts">${q.options.map((o, i) => `<button class="opt" data-ans="${i}"><b>${o}</b></button>`).join("")}</div><p class="hint">Right answer: <b>${money(Math.max(100, E.incomePerSec(st) * 40))}</b>${st.revealed ? " and +1 sustainability" : ""}. ${read ? "You've read the fact this is about." : "Tip: read your real facts before the next one."}</p><div id="pressResult"></div>`;
+        `<div class="opts">${(item.order || [0, 1, 2]).map((i) => `<button class="opt" data-ans="${i}"><b>${q.options[i]}</b></button>`).join("")}</div><p class="hint">Right answer: <b>${money(Math.max(100, E.incomePerSec(st) * 40))}</b>${read ? "" : ". Tip: read your real facts!"}</p><div id="pressResult"></div>`;
     } else if (item.type === "final") {
       h = head("brain", "Stage 5 complete", "Superintelligence is ready") + `<p>${A.esc(st.name)}'s last model has finished training. It is smarter than every human who ever lived, combined.</p><p>Your sustainability: <b>${E.sustainability(st)} / 100</b>. What kind of world will it wake up in?</p><button class="buy gold" data-launch>Launch superintelligence</button>`;
     }
@@ -116,7 +116,7 @@
     else if (b.dataset.ans !== undefined && item && item.type === "press") {
       const r = E.answerPress(st, item.fact, Number(b.dataset.ans));
       if (!r) return closeModal();
-      b.closest(".opts").querySelectorAll("button").forEach((x, i) => { x.disabled = true; if (i === r.answer) x.style.background = "var(--go)"; else if (x === b) x.style.background = "var(--coral)"; });
+      b.closest(".opts").querySelectorAll("button").forEach((x) => { x.disabled = true; if (Number(x.dataset.ans) === r.answer) x.style.background = "var(--go)"; else if (x === b) x.style.background = "var(--coral)"; });
       const f = G.facts[item.fact];
       $("pressResult").innerHTML = `<div class="factbox" style="background:${r.ok ? "var(--mint-soft)" : "#fde3dc"}"><b>${r.ok ? `Correct! +${money(r.reward)}` : "Not quite. No reward this time."}</b>${f.text}<small>Source: ${f.source}</small></div><button class="buy" data-close>Continue</button>`;
     } else if (b.hasAttribute("data-launch")) { st.queue.shift(); App.modalOpen = false; $("modal").classList.add("hidden"); E.finish(st); ending(); }
@@ -139,9 +139,9 @@
     el.innerHTML = `<div class="ending-inner">
       <div class="card ending-hero"><span class="m-ico">${A.icon(end.icon)}</span><h1>${end.title}</h1></div>
       <div class="card story">${story}<p ${d(0.6)} class="hint">${end.note}</p></div>
-      <div class="card fade-late" ${d(0.4)}><h2>${A.esc(st.name)} finished #${st.rank} in the world ranking</h2><div class="end-grid">${App.footprintRows(fp)}</div>
+      <div class="card fade-late" ${d(0.4)}><h2>${A.esc(st.name)} finished #${st.rank} in the world ranking</h2><div class="end-grid">${App.footprintRows(fp, true)}</div>
         <p class="hint">At the end you drew ${E.fmtPower(kw)} around the clock. Over a year that's ${E.fmtEnergy(kw * 8760)}, or ${share >= 1 ? Math.round(share) : share.toFixed(2)}% of what all the world's data centres used in 2024 (about 415 TWh, IEA).</p></div>
-      <div class="card fade-late" ${d(0.4)}><h2>Your choices · sustainability ${E.sustainability(st)}/100</h2><div class="fp-list">${choices || "<p>No decisions made.</p>"}</div><p class="hint">Green upgrades: ${greens}. Press conferences: ${st.pressRight} right out of ${st.pressRight + st.pressWrong}.</p></div>
+      <div class="card fade-late" ${d(0.4)}><h2>Your choices · sustainability ${E.sustainability(st)}/100</h2><div class="fp-list">${choices || "<p>No decisions made.</p>"}</div><p class="hint">Green upgrades: ${greens}. Fines paid: ${money(st.finesPaid)} (${st.finesCount}). Press conferences: ${st.pressRight} right out of ${st.pressRight + st.pressWrong}.</p></div>
       <div class="card fade-late" ${d(0.4)}><h2>5 real facts to remember</h2><ul class="takeaways">${G.takeaways.map((t) => `<li>${A.icon(t.icon)}<span>${t.text}<small>Source: ${t.source}</small></span></li>`).join("")}</ul></div>
       <div class="card fade-late" ${d(0.4)}><h2>Badges this game (${st.badges.length})</h2><div class="end-badges">${st.badges.map((b) => A.medal(G.badges.find((x) => x.id === b), true)).join("")}</div></div>
       <button class="buy gold fade-late" ${d(0)} id="againBtn">Play again: can you reach a different ending?</button>

@@ -98,31 +98,31 @@
   ];
 
   /* Green upgrades: bought once, available after the sustainability score
-   * appears. They raise sustainability (which lowers income) and cut the real
+   * appears. They raise sustainability, cost a share of income and cut the real
    * footprint. Each needs its real fact to be read first. Cost = costFrac ×
    * the size of that stage (its goal minus the previous goal). */
   GAME.greenUpgrades = [
-    { id: "leds", name: "Switch off what nobody uses", icon: "bulb", stage: 2, costFrac: 0.02, s: 3, fact: "prompt",
+    { id: "leds", income: 0.98, name: "Switch off what nobody uses", icon: "bulb", stage: 2, costFrac: 0.02, s: 3, fact: "prompt",
       desc: "Smart power strips and LED lights. Small, but it adds up.", set: { powerMult: 0.97 } },
-    { id: "refurb", name: "Buy refurbished servers", icon: "recycle", stage: 2, costFrac: 0.05, s: 5, fact: "manufacturing",
+    { id: "refurb", income: 0.96, name: "Buy refurbished servers", icon: "recycle", stage: 2, costFrac: 0.05, s: 5, fact: "manufacturing",
       desc: "Second-hand servers skip the most polluting step: manufacturing.", set: { lifespanMult: 1.3 } },
-    { id: "solarRoof", name: "Solar panels on the roof", icon: "sun", stage: 2, costFrac: 0.08, s: 4, fact: "carbonIntensity",
+    { id: "solarRoof", income: 0.95, name: "Solar panels on the roof", icon: "sun", stage: 2, costFrac: 0.08, s: 4, fact: "carbonIntensity",
       desc: "Some of your electricity now comes from the sun.", set: { ciMult: 0.9 } },
-    { id: "waterLoop", name: "Closed-loop water cooling", icon: "drop", stage: 3, costFrac: 0.03, s: 5, fact: "water",
+    { id: "waterLoop", income: 0.95, name: "Closed-loop water cooling", icon: "drop", stage: 3, costFrac: 0.03, s: 5, fact: "water",
       desc: "Reuse the same water instead of evaporating it.", set: { wueMult: 0.5 } },
-    { id: "heatReuse", name: "Heat nearby homes", icon: "house", stage: 3, costFrac: 0.05, s: 6, fact: "pue",
+    { id: "heatReuse", income: 0.94, name: "Heat nearby homes", icon: "house", stage: 3, costFrac: 0.05, s: 6, fact: "pue",
       desc: "Pipe your servers' waste heat to the town's heating network.", set: { pueAdd: -0.05 } },
-    { id: "carbonAware", name: "Carbon-aware scheduling", icon: "clock", stage: 3, costFrac: 0.07, s: 5, fact: "dataCentres",
+    { id: "carbonAware", income: 0.94, name: "Carbon-aware scheduling", icon: "clock", stage: 3, costFrac: 0.07, s: 5, fact: "dataCentres",
       desc: "Run the heavy jobs when the grid is full of wind and sun.", set: { ciMult: 0.85 } },
-    { id: "transparency", name: "Publish your real energy use", icon: "note", stage: 4, costFrac: 0.02, s: 4, fact: "reporting",
+    { id: "transparency", income: 0.97, name: "Publish your real energy use", icon: "note", stage: 4, costFrac: 0.02, s: 4, fact: "reporting",
       desc: "No greenwashing: report energy, water and emissions every year." },
-    { id: "repair", name: "Repair and resell old servers", icon: "recycle", stage: 4, costFrac: 0.04, s: 6, fact: "ewaste",
+    { id: "repair", income: 0.95, name: "Repair and resell old servers", icon: "recycle", stage: 4, costFrac: 0.04, s: 6, fact: "ewaste",
       desc: "Old machines get a second life instead of becoming e-waste.", set: { lifespanMult: 1.4 } },
-    { id: "limitVideo", name: "Make video generation opt-in", icon: "film", stage: 4, costFrac: 0.06, s: 7, fact: "images",
+    { id: "limitVideo", income: 0.93, name: "Make video generation opt-in", icon: "film", stage: 4, costFrac: 0.06, s: 7, fact: "images",
       desc: "Users must ask for video on purpose. Far less energy wasted.", set: { powerMult: 0.85 } },
-    { id: "energyPrice", name: "Price prompts by their energy", icon: "bolt", stage: 5, costFrac: 0.02, s: 7, fact: "rebound",
+    { id: "energyPrice", income: 0.93, name: "Price prompts by their energy", icon: "bolt", stage: 5, costFrac: 0.02, s: 7, fact: "rebound",
       desc: "Heavy prompts cost more, so efficiency stops fuelling the rebound effect.", set: { powerMult: 0.85 } },
-    { id: "computeCap", name: "Sign a global compute cap", icon: "globe", stage: 5, costFrac: 0.04, s: 8, fact: "usGrid",
+    { id: "computeCap", income: 0.92, name: "Sign a global compute cap", icon: "globe", stage: 5, costFrac: 0.04, s: 8, fact: "usGrid",
       desc: "You and the other labs agree to limit how much power AI can use." },
   ];
 

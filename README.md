@@ -16,11 +16,11 @@ An educational idle game about the real environmental cost of AI. You name your 
    3. The Data Centre
    4. The AI Campus
    5. The Planet
-4. **In the office you get fined**, and your **Sustainability score** appears. From then on:
-   - Low sustainability = more income (up to ×1.3). High = less (down to ×0.7).
-   - **AI upgrades** boost income but often cost power and sustainability. **Green upgrades** raise sustainability and lower income. Each green upgrade is unlocked by reading its real fact.
+4. **In the office you get fined**, and your **Sustainability score** appears. It starts high (85) because you're small, and drops as you grow. From then on:
+   - Below 65 you get **fined** again and again: the lower the score, the more often and the bigger the fines.
+   - **AI upgrades** boost income but often cost power and sustainability. **Green upgrades** raise sustainability but cost a share of income. Each green upgrade is unlocked by reading its real fact.
    - Decisions (energy, cooling, hardware, models, drought, the race) move the score.
-   - The world around you changes: the rainbow fades, the sky turns smoggy, trees die, the lake and ice caps shrink.
+   - The world around you changes: a little grey at 50, clearly damaged below 40, on fire below 15.
 5. **Press conferences** ask about the real facts you've unlocked. Right answers pay.
 6. **Goals** give rewards, and **badges** are kept between games.
 7. Your final score decides the ending: 70+ is good, below 40 is bad. The end screen shows your footprint and 5 real facts to remember.
@@ -37,6 +37,7 @@ The story and the ranking are fiction. Every **Real fact** is sourced (IEA, peer
 index.html             the page
 css/style.css          base sticker-style UI
 css/screens.css        start screen, ranking intro, pop-ups, ending
+css/layout.css         full-screen world, floating panels, news bar
 js/data.js             stages, hardware, AI upgrades, green upgrades, decisions
 js/content.js          real facts, press questions, news, goals, badges, ranking, endings
 js/engine.js           game rules (no display code)

@@ -7,7 +7,7 @@
     const I = makeIso(30, 480, 250);
     const { P, box, onZ, cyl, circ, poly } = I;
     const p = v.pollution, biome = v.biome || "grass", kind = biome === "desert" ? "cactus" : biome === "snow" ? "pine" : "tree";
-    let s = landscape(I, p, { biome, town: true, smoke: v.ci > 0.6 });
+    let s = landscape(I, p, { biome, town: true, smoke: v.ci > 0.6, horizon: 175 });
 
     // Lake (shrinks with pollution and water use) and a road.
     const lake = Math.max(0.25, 1 - p * 0.75);
@@ -73,13 +73,14 @@
 
   S.world = (v) => {
     const p = v.pollution, R = 250, cx = 480, cy = 360, W = 1100;
-    let s = `<rect x="-10" y="-10" width="980" height="710" fill="#13203a" stroke="none"/>`;
-    for (let i = 0; i < 70; i++) s += `<circle cx="${(i * 137) % 960}" cy="${(i * 89) % 690}" r="${i % 5 === 0 ? 1.8 : 1}" fill="#fff" opacity=".7" stroke="none"/>`;
+    let s = `<rect x="-700" y="-600" width="2400" height="1800" fill="#13203a" stroke="none"/>`;
+    for (let i = 0; i < 160; i++) s += `<circle cx="${((i * 137) % 1900) - 500}" cy="${((i * 89) % 1100) - 250}" r="${i % 5 === 0 ? 1.8 : 1}" fill="#fff" opacity=".7" stroke="none"/>`;
     const land = mix("#7cc36b", "#b59a63", p), dry = mix("#c9b26e", "#8f6a45", p), ocean = mix("#4d9de0", "#4a6272", p);
     const lights = Math.min(LIGHTS.length, 3 + v.owned.gigafactory * 2);
     const strip = (dx) => `<g transform="translate(${dx} 0)">` + LAND.map((d) => `<path d="${d}" fill="${land}"/>`).join("") +
       (p > 0.25 ? LAND.map((d) => `<path d="${d}" fill="${dry}" stroke="none" opacity="${Math.min(0.85, (p - 0.25) * 1.4).toFixed(2)}" transform="translate(${cx} ${cy}) scale(.7) translate(${-cx} ${-cy})"/>`).join("") : "") +
-      LIGHTS.slice(0, lights).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#ffe27a" stroke="#2b2433" stroke-width="1.5"/>`).join("") + `</g>`;
+      LIGHTS.slice(0, lights).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#ffe27a" stroke="#2b2433" stroke-width="1.5"/>`).join("") +
+      (p > 0.75 ? LIGHTS.slice(0, Math.round(((p - 0.75) / 0.25) * 12) + 3).map(([x, y]) => A.flame(x + 14, y + 6, 0.7)).join("") : "") + `</g>`;
     s += `<clipPath id="planetClip"><circle cx="${cx}" cy="${cy}" r="${R}"/></clipPath><circle cx="${cx}" cy="${cy}" r="${R + 12}" fill="none" stroke="${mix("#bfe8ff", "#c79a6a", p)}" stroke-width="10" opacity=".6"/>`;
     s += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="${ocean}"/><g clip-path="url(#planetClip)"><g>${strip(0)}${strip(W)}<animateTransform attributeName="transform" type="translate" from="0 0" to="${-W} 0" dur="90s" repeatCount="indefinite"/></g>`;
     const ice = Math.max(0.15, 1 - p * 0.85);
